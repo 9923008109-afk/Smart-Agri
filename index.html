@@ -2,7 +2,7 @@
 <html lang="ta">
 <head>
 <meta charset="UTF-8">
-<title>Smart Agriculture Dashboard</title>
+<title>AgroBolt - Smart Agriculture Platform</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <!-- Chart.js -->
@@ -21,6 +21,8 @@
   --card:#020617;
   --border:#1e293b;
   --accent:#38bdf8;
+  --agrobolt-green:#22c55e;
+  --agrobolt-yellow:#facc15;
 }
 body{
   margin:0;
@@ -39,11 +41,11 @@ body{
   padding:30px;
   width:350px;
   border-radius:12px;
-  box-shadow:0 0 20px rgba(56,189,248,.35);
+  box-shadow:0 0 20px rgba(34,197,94,.35);
 }
 .login-card h2{
   text-align:center;
-  color:var(--accent);
+  color:var(--agrobolt-green);
   margin-bottom:20px;
 }
 .login-options{
@@ -62,9 +64,9 @@ body{
   transition:all 0.3s;
 }
 .login-option.active{
-  background:var(--accent);
+  background:var(--agrobolt-green);
   color:white;
-  border-color:var(--accent);
+  border-color:var(--agrobolt-green);
 }
 .language-toggle{
   position:absolute;
@@ -87,7 +89,7 @@ body{
   color:#94a3b8;
 }
 .lang-btn.active{
-  background:#38bdf8;
+  background:var(--agrobolt-green);
   color:white;
 }
 input,button{
@@ -99,14 +101,15 @@ input,button{
   box-sizing:border-box;
 }
 button{
-  background:var(--accent);
+  background:var(--agrobolt-green);
   color:white;
   font-weight:bold;
   cursor:pointer;
-  transition:opacity 0.3s;
+  transition:all 0.3s;
 }
 button:hover{
   opacity:0.9;
+  transform:translateY(-1px);
 }
 header{
   padding:14px 18px;
@@ -114,6 +117,17 @@ header{
   justify-content:space-between;
   align-items:center;
   border-bottom:1px solid var(--border);
+  background:linear-gradient(135deg,#0f172a,#1e293b);
+}
+.logo{
+  font-size:24px;
+  font-weight:bold;
+  background:linear-gradient(135deg,var(--agrobolt-green),var(--agrobolt-yellow));
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+  display:flex;
+  align-items:center;
+  gap:10px;
 }
 .badge{
   padding:4px 10px;
@@ -121,8 +135,8 @@ header{
   font-size:12px;
   font-weight:bold;
 }
-.farmer{background:#22c55e;color:black}
-.buyer{background:#facc15;color:black}
+.farmer{background:var(--agrobolt-green);color:black}
+.buyer{background:var(--agrobolt-yellow);color:black}
 .admin{background:#8b5cf6;color:white}
 .container{
   padding:18px;
@@ -139,6 +153,11 @@ header{
   border:1px solid var(--border);
   border-radius:12px;
   padding:15px;
+  transition:all 0.3s;
+}
+.card:hover{
+  border-color:var(--agrobolt-green);
+  transform:translateY(-2px);
 }
 .card h3{
   margin-top:0;
@@ -153,6 +172,11 @@ header{
   border-radius:6px;
   cursor:pointer;
   margin-left:10px;
+  transition:all 0.3s;
+}
+.logout:hover{
+  background:#dc2626;
+  transform:translateY(-1px);
 }
 canvas{
   background:#fff;
@@ -170,8 +194,8 @@ canvas{
 
 /* Crop Recommendation Styles */
 .crop-highlight {
-  background:linear-gradient(135deg, #22c55e20, #38bdf820);
-  border-left:4px solid #22c55e;
+  background:linear-gradient(135deg, rgba(34,197,94,0.15), rgba(56,189,248,0.15));
+  border-left:4px solid var(--agrobolt-green);
   padding:12px;
   border-radius:6px;
   margin:10px 0;
@@ -184,31 +208,143 @@ canvas{
   border:1px solid #334155;
 }
 .profit-indicator {
-  color:#22c55e;
+  color:var(--agrobolt-green);
   font-weight:bold;
 }
 .risk-indicator {
-  color:#facc15;
+  color:var(--agrobolt-yellow);
   font-weight:bold;
 }
-.crop-grid {
+
+/* Enhanced Alternative Crops Grid */
+.alternative-crops-container {
+  margin-top:15px;
+}
+.alternative-crops-title {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:10px;
+}
+.view-toggle-sm {
+  display:flex;
+  gap:5px;
+}
+.view-sm-btn {
+  padding:3px 8px;
+  border-radius:4px;
+  cursor:pointer;
+  border:none;
+  background:transparent;
+  color:#94a3b8;
+  font-size:12px;
+}
+.view-sm-btn.active {
+  background:var(--agrobolt-green);
+  color:white;
+}
+.alternative-crops-grid {
   display:grid;
   grid-template-columns:repeat(auto-fill,minmax(180px,1fr));
   gap:10px;
-  margin-top:10px;
 }
-.crop-item {
+.alternative-crops-list {
+  display:none;
+}
+.alternative-crops-list.active {
+  display:block;
+}
+.alternative-crops-grid.active {
+  display:grid;
+}
+.alternative-crop-item {
   background:#1e293b;
   padding:10px;
-  border-radius:6px;
+  border-radius:8px;
+  cursor:pointer;
+  transition:all 0.3s;
+  border:2px solid transparent;
+}
+.alternative-crop-item:hover {
+  background:#334155;
+  border-color:var(--agrobolt-green);
+  transform:translateY(-2px);
+}
+.alternative-crop-item.selected {
+  background:#0f172a;
+  border-color:var(--agrobolt-green);
+}
+.alternative-crop-icon {
+  font-size:28px;
+  margin-bottom:8px;
   text-align:center;
+}
+.alternative-crop-name {
+  font-size:14px;
+  font-weight:bold;
+  color:#e5e7eb;
+  margin-bottom:3px;
+}
+.alternative-crop-profit {
+  font-size:12px;
+  color:var(--agrobolt-green);
+  font-weight:bold;
+}
+.alternative-crop-risk {
+  font-size:11px;
+  padding:2px 6px;
+  border-radius:10px;
+  display:inline-block;
+  margin-top:5px;
+}
+.risk-low{background:rgba(34,197,94,0.2);color:#22c55e;}
+.risk-medium{background:rgba(250,204,21,0.2);color:#facc15;}
+.risk-high{background:rgba(239,68,68,0.2);color:#ef4444;}
+
+/* Alternative Crops List View */
+.alternative-crop-list-item {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:10px;
+  background:#1e293b;
+  margin-bottom:8px;
+  border-radius:6px;
   cursor:pointer;
   transition:all 0.3s;
 }
-.crop-item:hover {
+.alternative-crop-list-item:hover {
   background:#334155;
-  transform:translateY(-2px);
+  transform:translateX(5px);
 }
+.list-crop-info {
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+.list-crop-icon {
+  font-size:24px;
+}
+.list-crop-details {
+  flex:1;
+}
+.list-crop-name {
+  font-weight:bold;
+  color:#e5e7eb;
+}
+.list-crop-desc {
+  font-size:12px;
+  color:#94a3b8;
+}
+.list-crop-stats {
+  text-align:right;
+}
+.list-crop-profit {
+  color:var(--agrobolt-green);
+  font-weight:bold;
+}
+
+/* Crop Details Modal */
 .crop-details-modal {
   position:fixed;
   top:50%;
@@ -257,6 +393,10 @@ canvas{
   border-radius:8px;
   text-align:center;
   border:1px solid #334155;
+  transition:all 0.3s;
+}
+.data-item:hover {
+  border-color:var(--agrobolt-green);
 }
 .data-value {
   font-size:24px;
@@ -272,8 +412,8 @@ canvas{
   font-size:12px;
   color:#38bdf8;
 }
-.data-good {color:#22c55e;}
-.data-warning {color:#facc15;}
+.data-good {color:var(--agrobolt-green);}
+.data-warning {color:var(--agrobolt-yellow);}
 .data-danger {color:#ef4444;}
 
 /* Chart Toggle */
@@ -294,9 +434,13 @@ canvas{
   background:transparent;
   color:#94a3b8;
   font-size:14px;
+  transition:all 0.3s;
+}
+.toggle-btn:hover {
+  background:#334155;
 }
 .toggle-btn.active {
-  background:#38bdf8;
+  background:var(--agrobolt-green);
   color:white;
 }
 .chart-display {
@@ -322,10 +466,10 @@ canvas{
 }
 .market-item:hover {
   transform:translateY(-5px);
-  border-color:#38bdf8;
+  border-color:var(--agrobolt-green);
 }
 .price-tag {
-  background:#22c55e;
+  background:var(--agrobolt-green);
   color:white;
   padding:5px 10px;
   border-radius:15px;
@@ -333,7 +477,7 @@ canvas{
   font-size:14px;
 }
 .quantity-tag {
-  background:#f59e0b;
+  background:var(--agrobolt-yellow);
   color:black;
   padding:5px 10px;
   border-radius:15px;
@@ -341,7 +485,7 @@ canvas{
   font-size:14px;
 }
 .contact-btn {
-  background:#38bdf8;
+  background:var(--agrobolt-green);
   color:white;
   border:none;
   padding:8px 15px;
@@ -349,6 +493,11 @@ canvas{
   cursor:pointer;
   width:100%;
   margin-top:10px;
+  transition:all 0.3s;
+}
+.contact-btn:hover {
+  background:#16a34a;
+  transform:translateY(-1px);
 }
 </style>
 </head>
@@ -364,7 +513,7 @@ canvas{
 <!-- LOGIN -->
 <div class="center" id="loginPage">
   <div class="login-card">
-    <h2 id="loginTitle">🔐 Smart Agriculture Login</h2>
+    <h2 id="loginTitle">🔐 AgroBolt Login</h2>
     
     <div class="login-options">
       <div class="login-option active" id="farmerOption" onclick="selectLoginType('farmer')">
@@ -392,9 +541,8 @@ canvas{
 <!-- FARMER DASHBOARD -->
 <div id="farmerDashboard" style="display:none">
 <header>
-  <div>
-    <span id="dashboardTitle">Smart Agriculture Dashboard</span>
-    <span id="roleBadge" class="badge"></span>
+  <div class="logo">
+    <span>⚡ AgroBolt</span>
   </div>
   <div class="top-actions">
     <span id="connectionStatus" style="color:#facc15;">● Connecting...</span>
@@ -433,10 +581,28 @@ canvas{
         </div>
       </div>
       
-      <div style="margin-top:15px;">
-        <h4 style="color:#93c5fd;margin-bottom:10px;" id="alternativeCropsTitle">📋 Alternative Crops:</h4>
-        <div id="alternativeCrops" class="crop-grid">
+      <!-- Enhanced Alternative Crops Section -->
+      <div class="alternative-crops-container">
+        <div class="alternative-crops-title">
+          <h4 style="color:#93c5fd;margin:0;" id="alternativeCropsTitle">📋 Alternative Crops:</h4>
+          <div class="view-toggle-sm">
+            <button class="view-sm-btn active" onclick="switchAlternativeView('grid')">
+              <i class="bi bi-grid-3x3-gap"></i>
+            </button>
+            <button class="view-sm-btn" onclick="switchAlternativeView('list')">
+              <i class="bi bi-list"></i>
+            </button>
+          </div>
+        </div>
+        
+        <!-- Grid View -->
+        <div class="alternative-crops-grid active" id="alternativeGrid">
           <!-- Alternative crops will be added here -->
+        </div>
+        
+        <!-- List View -->
+        <div class="alternative-crops-list" id="alternativeList">
+          <!-- List items will be added here -->
         </div>
       </div>
     </div>
@@ -505,9 +671,8 @@ canvas{
 <!-- BUYER DASHBOARD -->
 <div id="buyerDashboard" style="display:none">
 <header>
-  <div>
-    <span id="buyerDashboardTitle">Agricultural Market Dashboard</span>
-    <span id="buyerRoleBadge" class="badge"></span>
+  <div class="logo">
+    <span>⚡ AgroBolt Market</span>
   </div>
   <div class="top-actions">
     <span id="buyerConnectionStatus" style="color:#facc15;">● Connecting...</span>
@@ -587,7 +752,7 @@ try {
 const translations = {
   ta: {
     // Login Page
-    loginTitle: "🔐 ஸ்மார்ட் விவசாய உள்நுழைவு",
+    loginTitle: "🔐 AgroBolt உள்நுழைவு",
     farmerLabel: "விவசாயி",
     buyerLabel: "வாங்குபவர்",
     usernamePlaceholder: "பயனர் பெயர்",
@@ -596,7 +761,7 @@ const translations = {
     demoCredentials: "டெமோ கடவுச்சொற்கள்:",
     
     // Farmer Dashboard
-    dashboardTitle: "ஸ்மார்ட் விவசாய டாஷ்போர்டு",
+    dashboardTitle: "AgroBolt டாஷ்போர்டு",
     logoutBtn: "வெளியேறு",
     cropRecTitle: "🌾 வருங்கால பயிர் பரிந்துரை",
     nextMonthLabel: "அடுத்த மாதம்:",
@@ -615,7 +780,7 @@ const translations = {
     cropDetailsTitle: "🎯 பரிந்துரைக்கப்பட்ட பயிர் தகவல்:",
     
     // Buyer Dashboard
-    buyerDashboardTitle: "விவசாய சந்தை டாஷ்போர்டு",
+    buyerDashboardTitle: "AgroBolt சந்தை",
     marketTitle: "🛒 சந்தையில் கிடைக்கும் பயிர்கள்",
     searchPlaceholder: "பயிர்களை தேடு...",
     priceTrendTitle: "📈 பயிர் விலை போக்குகள்",
@@ -641,11 +806,19 @@ const translations = {
     duration: "கால அளவு",
     high: "அதிகம்",
     medium: "மிதமானது",
-    low: "குறைந்தது"
+    low: "குறைந்தது",
+    profitPotential: "லாப திறன்",
+    riskLevel: "அபாய அளவு",
+    
+    // Alternative Crops
+    viewGrid: "கட்டம் பார்வை",
+    viewList: "பட்டியல் பார்வை",
+    select: "தேர்ந்தெடு",
+    comparison: "ஒப்பீடு"
   },
   en: {
     // Login Page
-    loginTitle: "🔐 Smart Agriculture Login",
+    loginTitle: "🔐 AgroBolt Login",
     farmerLabel: "Farmer",
     buyerLabel: "Buyer",
     usernamePlaceholder: "Username",
@@ -654,7 +827,7 @@ const translations = {
     demoCredentials: "Demo Credentials:",
     
     // Farmer Dashboard
-    dashboardTitle: "Smart Agriculture Dashboard",
+    dashboardTitle: "AgroBolt Dashboard",
     logoutBtn: "Logout",
     cropRecTitle: "🌾 Future Crop Recommendation",
     nextMonthLabel: "Next Month:",
@@ -673,7 +846,7 @@ const translations = {
     cropDetailsTitle: "🎯 Recommended Crop Details:",
     
     // Buyer Dashboard
-    buyerDashboardTitle: "Agricultural Market Dashboard",
+    buyerDashboardTitle: "AgroBolt Market",
     marketTitle: "🛒 Available Crops in Market",
     searchPlaceholder: "Search crops...",
     priceTrendTitle: "📈 Crop Price Trends",
@@ -699,7 +872,15 @@ const translations = {
     duration: "Duration",
     high: "High",
     medium: "Medium",
-    low: "Low"
+    low: "Low",
+    profitPotential: "Profit Potential",
+    riskLevel: "Risk Level",
+    
+    // Alternative Crops
+    viewGrid: "Grid View",
+    viewList: "List View",
+    select: "Select",
+    comparison: "Comparison"
   }
 };
 
@@ -707,7 +888,7 @@ const translations = {
 const tamilMonthNames = ["சித்திரை", "வைகாசி", "ஆனி", "ஆடி", "ஆவணி", "புரட்டாசி", "ஐப்பசி", "கார்த்திகை", "மார்கழி", "தை", "மாசி", "பங்குனி"];
 const englishMonthNames = ["April", "May", "June", "July", "August", "September", "October", "November", "December", "January", "February", "March"];
 
-// Crop database
+// Enhanced Crop database with more alternatives
 const cropDatabase = [
   {
     name: { ta: "நெல் (குருவை)", en: "Paddy (Kuruvai)" },
@@ -724,7 +905,9 @@ const cropDatabase = [
     profitRange: { ta: "₹40,000 - ₹60,000/ஏக்கர்", en: "₹40,000 - ₹60,000/acre" },
     risk: { ta: "குறைந்தது", en: "Low" },
     duration: { ta: "90-120 நாட்கள்", en: "90-120 days" },
-    waterReq: { ta: "அதிகம்", en: "High" }
+    waterReq: { ta: "அதிகம்", en: "High" },
+    profitPotential: "High",
+    marketDemand: { ta: "உயர்ந்தது", en: "High" }
   },
   {
     name: { ta: "சோளம்", en: "Maize" },
@@ -735,13 +918,15 @@ const cropDatabase = [
     idealTemp: { min: 22, max: 30 },
     idealMoisture: { min: 50, max: 70 },
     naturalFertilizers: { 
-      ta: ["ஜீவாமிருதம்", "வேம்பு புண்ணாக்கு"], 
-      en: ["Jeevamrutha", "Neem Cake"] 
+      ta: ["ஜீவாமிருதம்", "வேம்பு புண்ணாக்கு", "கம்போஸ்ட்"], 
+      en: ["Jeevamrutha", "Neem Cake", "Compost"] 
     },
     profitRange: { ta: "₹30,000 - ₹45,000/ஏக்கர்", en: "₹30,000 - ₹45,000/acre" },
     risk: { ta: "குறைந்தது", en: "Low" },
     duration: { ta: "85-100 நாட்கள்", en: "85-100 days" },
-    waterReq: { ta: "மிதமானது", en: "Medium" }
+    waterReq: { ta: "மிதமானது", en: "Medium" },
+    profitPotential: "Medium",
+    marketDemand: { ta: "நல்லது", en: "Good" }
   },
   {
     name: { ta: "கடலை", en: "Groundnut" },
@@ -752,13 +937,15 @@ const cropDatabase = [
     idealTemp: { min: 25, max: 35 },
     idealMoisture: { min: 40, max: 60 },
     naturalFertilizers: { 
-      ta: ["வேம்பு புண்ணாக்கு", "மாட்டுச் சாணம்"], 
-      en: ["Neem Cake", "Cow Dung Manure"] 
+      ta: ["வேம்பு புண்ணாக்கு", "மாட்டுச் சாணம்", "ராக்காசியா பாசி"], 
+      en: ["Neem Cake", "Cow Dung Manure", "Rhizobium Culture"] 
     },
     profitRange: { ta: "₹50,000 - ₹75,000/ஏக்கர்", en: "₹50,000 - ₹75,000/acre" },
     risk: { ta: "மிதமானது", en: "Medium" },
     duration: { ta: "100-120 நாட்கள்", en: "100-120 days" },
-    waterReq: { ta: "குறைந்தது", en: "Low" }
+    waterReq: { ta: "குறைந்தது", en: "Low" },
+    profitPotential: "High",
+    marketDemand: { ta: "உயர்ந்தது", en: "High" }
   },
   {
     name: { ta: "மிளகாய்", en: "Chilli" },
@@ -769,13 +956,91 @@ const cropDatabase = [
     idealTemp: { min: 20, max: 30 },
     idealMoisture: { min: 50, max: 70 },
     naturalFertilizers: { 
-      ta: ["மீன் உரம்", "கொட்டைப் பிண்ணாக்கு"], 
-      en: ["Fish Emulsion", "Castor Cake"] 
+      ta: ["மீன் உரம்", "கொட்டைப் பிண்ணாக்கு", "பச்சைத் தழை உரம்"], 
+      en: ["Fish Emulsion", "Castor Cake", "Green Manure"] 
     },
     profitRange: { ta: "₹60,000 - ₹90,000/ஏக்கர்", en: "₹60,000 - ₹90,000/acre" },
     risk: { ta: "அதிகம்", en: "High" },
     duration: { ta: "120-150 நாட்கள்", en: "120-150 days" },
-    waterReq: { ta: "மிதமானது", en: "Medium" }
+    waterReq: { ta: "மிதமானது", en: "Medium" },
+    profitPotential: "Very High",
+    marketDemand: { ta: "மிக உயர்ந்தது", en: "Very High" }
+  },
+  {
+    name: { ta: "பச்சைப் பயறு", en: "Green Gram" },
+    icon: "🫘",
+    seasons: ["Kharif", "Rabi"],
+    sowingMonths: [5, 6, 9, 10],
+    harvestMonths: [7, 8, 0, 1],
+    idealTemp: { min: 25, max: 35 },
+    idealMoisture: { min: 40, max: 60 },
+    naturalFertilizers: { 
+      ta: ["பச்சைத் தழை உரம்", "மாட்டுச் சாணம்", "வேம்பு புண்ணாக்கு"], 
+      en: ["Green Manure", "Cow Dung Manure", "Neem Cake"] 
+    },
+    profitRange: { ta: "₹25,000 - ₹40,000/ஏக்கர்", en: "₹25,000 - ₹40,000/acre" },
+    risk: { ta: "குறைந்தது", en: "Low" },
+    duration: { ta: "60-75 நாட்கள்", en: "60-75 days" },
+    waterReq: { ta: "குறைந்தது", en: "Low" },
+    profitPotential: "Medium",
+    marketDemand: { ta: "நல்லது", en: "Good" }
+  },
+  {
+    name: { ta: "கரும்பு", en: "Sugarcane" },
+    icon: "🎋",
+    seasons: ["Perennial"],
+    sowingMonths: [0, 1, 5, 6],
+    harvestMonths: [0, 1, 5, 6],
+    idealTemp: { min: 20, max: 35 },
+    idealMoisture: { min: 70, max: 85 },
+    naturalFertilizers: { 
+      ta: ["பஞ்சகவ்யம்", "மாட்டுச் சாணம்", "சிட்டுக்குருவி கழிவு"], 
+      en: ["Panchagavya", "Cow Dung Manure", "Poultry Manure"] 
+    },
+    profitRange: { ta: "₹80,000 - ₹1,20,000/ஏக்கர்", en: "₹80,000 - ₹1,20,000/acre" },
+    risk: { ta: "அதிகம்", en: "High" },
+    duration: { ta: "12-18 மாதங்கள்", en: "12-18 months" },
+    waterReq: { ta: "அதிகம்", en: "High" },
+    profitPotential: "Very High",
+    marketDemand: { ta: "நிலையானது", en: "Stable" }
+  },
+  {
+    name: { ta: "வெங்காயம்", en: "Onion" },
+    icon: "🧅",
+    seasons: ["Rabi"],
+    sowingMonths: [9, 10],
+    harvestMonths: [1, 2, 3],
+    idealTemp: { min: 15, max: 25 },
+    idealMoisture: { min: 50, max: 70 },
+    naturalFertilizers: { 
+      ta: ["கம்போஸ்ட்", "மாட்டுச் சாணம்", "கொட்டைப் பிண்ணாக்கு"], 
+      en: ["Compost", "Cow Dung Manure", "Castor Cake"] 
+    },
+    profitRange: { ta: "₹70,000 - ₹1,00,000/ஏக்கர்", en: "₹70,000 - ₹1,00,000/acre" },
+    risk: { ta: "அதிகம்", en: "High" },
+    duration: { ta: "90-120 நாட்கள்", en: "90-120 days" },
+    waterReq: { ta: "மிதமானது", en: "Medium" },
+    profitPotential: "High",
+    marketDemand: { ta: "உயர்ந்தது", en: "High" }
+  },
+  {
+    name: { ta: "தக்காளி", en: "Tomato" },
+    icon: "🍅",
+    seasons: ["All seasons"],
+    sowingMonths: [6, 7, 9, 10],
+    harvestMonths: [9, 10, 0, 1],
+    idealTemp: { min: 15, max: 27 },
+    idealMoisture: { min: 60, max: 80 },
+    naturalFertilizers: { 
+      ta: ["பச்சைத் தழை உரம்", "மீன் உரம்", "கோழிக் கழிவு"], 
+      en: ["Green Manure", "Fish Emulsion", "Poultry Manure"] 
+    },
+    profitRange: { ta: "₹80,000 - ₹1,20,000/ஏக்கர்", en: "₹80,000 - ₹1,20,000/acre" },
+    risk: { ta: "அதிகம்", en: "High" },
+    duration: { ta: "90-100 நாட்கள்", en: "90-100 days" },
+    waterReq: { ta: "அதிகம்", en: "High" },
+    profitPotential: "Very High",
+    marketDemand: { ta: "மிக உயர்ந்தது", en: "Very High" }
   }
 ];
 
@@ -838,6 +1103,7 @@ let priceChart = null;
 let selectedCrop = null;
 let fieldHistory = [];
 const MAX_HISTORY = 20;
+let alternativeViewMode = 'grid';
 
 /* ---------- Language Functions ---------- */
 function changeLanguage(lang) {
@@ -864,7 +1130,6 @@ function updateLanguage() {
   document.getElementById('demoCredentials').textContent = lang.demoCredentials;
   
   // Update farmer dashboard
-  document.getElementById('dashboardTitle').textContent = lang.dashboardTitle;
   document.getElementById('logoutBtn').textContent = lang.logoutBtn;
   document.getElementById('cropRecTitle').textContent = lang.cropRecTitle;
   document.getElementById('nextMonthLabel').textContent = lang.nextMonthLabel;
@@ -882,7 +1147,6 @@ function updateLanguage() {
   document.getElementById('cropDetailsTitle').textContent = lang.cropDetailsTitle;
   
   // Update buyer dashboard
-  document.getElementById('buyerDashboardTitle').textContent = lang.buyerDashboardTitle;
   document.getElementById('buyerLogoutBtn').textContent = lang.logoutBtn;
   document.getElementById('marketTitle').textContent = lang.marketTitle;
   document.getElementById('searchCrop').placeholder = lang.searchPlaceholder;
@@ -907,6 +1171,104 @@ function updateLanguage() {
   // Update crop display if farmer dashboard is active
   if (role === 'farmer' && selectedCrop) {
     updateCropDisplayForLanguage();
+    updateAlternativeCropsDisplay();
+  }
+}
+
+/* ---------- Alternative Crops View Switching ---------- */
+function switchAlternativeView(mode) {
+  alternativeViewMode = mode;
+  
+  // Update toggle buttons
+  document.querySelectorAll('.view-sm-btn').forEach(btn => btn.classList.remove('active'));
+  event.target.classList.add('active');
+  
+  // Update displays
+  const gridView = document.getElementById('alternativeGrid');
+  const listView = document.getElementById('alternativeList');
+  
+  if (mode === 'grid') {
+    gridView.classList.add('active');
+    listView.classList.remove('active');
+  } else {
+    gridView.classList.remove('active');
+    listView.classList.add('active');
+  }
+}
+
+/* ---------- Update Alternative Crops Display ---------- */
+function updateAlternativeCropsDisplay(alternatives) {
+  const gridContainer = document.getElementById('alternativeGrid');
+  const listContainer = document.getElementById('alternativeList');
+  const lang = translations[currentLanguage];
+  
+  if (!alternatives || alternatives.length === 0) {
+    const noCropsMsg = currentLanguage === 'ta' ? 'மாற்று பயிர்கள் இல்லை' : 'No alternative crops';
+    gridContainer.innerHTML = `<div style="text-align:center;padding:20px;color:#94a3b8;">${noCropsMsg}</div>`;
+    listContainer.innerHTML = `<div style="text-align:center;padding:20px;color:#94a3b8;">${noCropsMsg}</div>`;
+    return;
+  }
+  
+  // Grid View
+  let gridHTML = '';
+  alternatives.forEach((crop, index) => {
+    const riskClass = crop.risk[currentLanguage] === 'High' || crop.risk[currentLanguage] === 'அதிகம்' ? 'risk-high' : 
+                     crop.risk[currentLanguage] === 'Medium' || crop.risk[currentLanguage] === 'மிதமானது' ? 'risk-medium' : 'risk-low';
+    
+    gridHTML += `
+      <div class="alternative-crop-item" onclick="selectAlternativeCrop(${index})" title="${crop.name[currentLanguage]}">
+        <div class="alternative-crop-icon">${crop.icon}</div>
+        <div class="alternative-crop-name">${crop.name[currentLanguage]}</div>
+        <div class="alternative-crop-profit">${crop.profitRange[currentLanguage]}</div>
+        <div class="alternative-crop-risk ${riskClass}">${crop.risk[currentLanguage]}</div>
+      </div>
+    `;
+  });
+  gridContainer.innerHTML = gridHTML;
+  
+  // List View
+  let listHTML = '';
+  alternatives.forEach((crop, index) => {
+    listHTML += `
+      <div class="alternative-crop-list-item" onclick="selectAlternativeCrop(${index})">
+        <div class="list-crop-info">
+          <div class="list-crop-icon">${crop.icon}</div>
+          <div class="list-crop-details">
+            <div class="list-crop-name">${crop.name[currentLanguage]}</div>
+            <div class="list-crop-desc">${crop.duration[currentLanguage]} • ${crop.waterReq[currentLanguage]}</div>
+          </div>
+        </div>
+        <div class="list-crop-stats">
+          <div class="list-crop-profit">${crop.profitRange[currentLanguage]}</div>
+          <div style="font-size:11px;color:#94a3b8;margin-top:2px;">${crop.risk[currentLanguage]}</div>
+        </div>
+      </div>
+    `;
+  });
+  listContainer.innerHTML = listHTML;
+}
+
+function selectAlternativeCrop(index) {
+  const alternatives = getAlternativeCrops();
+  if (alternatives && alternatives[index]) {
+    selectedCrop = alternatives[index];
+    updateCropDetails(selectedCrop);
+    
+    // Update UI to show selected crop
+    const allItems = document.querySelectorAll('.alternative-crop-item, .alternative-crop-list-item');
+    allItems.forEach(item => item.classList.remove('selected'));
+    
+    // Highlight selected item
+    if (alternativeViewMode === 'grid') {
+      const gridItems = document.querySelectorAll('.alternative-crop-item');
+      if (gridItems[index]) gridItems[index].classList.add('selected');
+    } else {
+      const listItems = document.querySelectorAll('.alternative-crop-list-item');
+      if (listItems[index]) listItems[index].classList.add('selected');
+    }
+    
+    // Show crop details in modal
+    showCropDetails(selectedCrop.name.en);
   }
 }
 
@@ -963,16 +1325,12 @@ window.login = () => {
 function showFarmerDashboard(){
   document.getElementById('loginPage').style.display = "none";
   document.getElementById('farmerDashboard').style.display = "block";
-  document.getElementById('roleBadge').textContent = currentLanguage === 'ta' ? 'விவசாயி' : 'FARMER';
-  document.getElementById('roleBadge').className = "badge farmer";
   updateLanguage();
 }
 
 function showBuyerDashboard(){
   document.getElementById('loginPage').style.display = "none";
   document.getElementById('buyerDashboard').style.display = "block";
-  document.getElementById('buyerRoleBadge').textContent = currentLanguage === 'ta' ? 'வாங்குபவர்' : 'BUYER';
-  document.getElementById('buyerRoleBadge').className = "badge buyer";
   updateLanguage();
   updateMarketDisplay();
   createPriceChart();
@@ -1013,9 +1371,9 @@ function createGaugeChart(data) {
           data.humidity || 0,
           data.nitrate || 0
         ],
-        backgroundColor: 'rgba(56, 189, 248, 0.2)',
-        borderColor: '#38bdf8',
-        pointBackgroundColor: '#38bdf8'
+        backgroundColor: 'rgba(34, 197, 94, 0.2)',
+        borderColor: '#22c55e',
+        pointBackgroundColor: '#22c55e'
       }]
     },
     options: {
@@ -1176,7 +1534,7 @@ function getNextMonthRecommendation(currentMonth, fieldData) {
   });
   
   const topCrops = suitableCrops.slice(0, 3);
-  const alternatives = suitableCrops.slice(1, 4);
+  const alternatives = suitableCrops.slice(1, 6); // Get 5 alternatives
   
   let bestCrop = topCrops[0];
   const soilMoist = fieldData?.soilMoist || 50;
@@ -1194,14 +1552,33 @@ function getNextMonthRecommendation(currentMonth, fieldData) {
     crop: bestCrop.name[currentLanguage],
     profit: bestCrop.profitRange[currentLanguage],
     risk: bestCrop.risk[currentLanguage],
-    alternatives: alternatives,
     fertilizers: bestCrop.naturalFertilizers[currentLanguage]
   };
 }
 
+function getAlternativeCrops() {
+  const currentMonth = new Date().getMonth();
+  const nextMonth = (currentMonth + 1) % 12;
+  
+  const suitableCrops = cropDatabase.filter(crop => crop.sowingMonths.includes(nextMonth));
+  
+  if (suitableCrops.length <= 1) {
+    return [];
+  }
+  
+  // Sort by profit and return alternatives (exclude the top one)
+  return suitableCrops
+    .sort((a, b) => {
+      const profitA = parseInt(a.profitRange[currentLanguage].split('-')[0].replace(/[^0-9]/g, ''));
+      const profitB = parseInt(b.profitRange[currentLanguage].split('-')[0].replace(/[^0-9]/g, ''));
+      return profitB - profitA;
+    })
+    .slice(1, 7); // Return up to 6 alternatives
+}
+
 function updateCropDisplay(recommendation) {
   document.getElementById('recommendedCropLabel').innerHTML = 
-    `<span style="color:#38bdf8;font-size:18px;">${recommendation.crop}</span>`;
+    `<span style="color:#22c55e;font-size:18px;">${recommendation.crop}</span>`;
   
   document.getElementById('expectedProfit').textContent = recommendation.profit;
   document.getElementById('riskFactors').textContent = recommendation.risk;
@@ -1218,19 +1595,8 @@ function updateCropDisplay(recommendation) {
   }
   
   // Update alternative crops
-  const alternativeElement = document.getElementById('alternativeCrops');
-  if (recommendation.alternatives && recommendation.alternatives.length > 0) {
-    let alternativeHTML = '';
-    recommendation.alternatives.forEach((crop, index) => {
-      alternativeHTML += `
-        <div class="crop-item" onclick="showCropDetails('${crop.name.en}')" title="${crop.name[currentLanguage]}">
-          <div class="crop-icon">${crop.icon}</div>
-          <div style="font-size:13px;">${crop.name[currentLanguage]}</div>
-        </div>
-      `;
-    });
-    alternativeElement.innerHTML = alternativeHTML;
-  }
+  const alternatives = getAlternativeCrops();
+  updateAlternativeCropsDisplay(alternatives);
   
   // Update crop details
   if (selectedCrop) {
@@ -1245,12 +1611,10 @@ function updateCropDisplayForLanguage() {
     crop: selectedCrop.name[currentLanguage],
     profit: selectedCrop.profitRange[currentLanguage],
     risk: selectedCrop.risk[currentLanguage],
-    fertilizers: selectedCrop.naturalFertilizers[currentLanguage],
-    alternatives: []
+    fertilizers: selectedCrop.naturalFertilizers[currentLanguage]
   };
   
   updateCropDisplay(recommendation);
-  updateCropDetails(selectedCrop);
 }
 
 function updateCropDetails(crop) {
@@ -1261,7 +1625,7 @@ function updateCropDetails(crop) {
     <div style="display:flex;align-items:center;gap:15px;margin-bottom:15px;">
       <div style="font-size:40px;">${crop.icon}</div>
       <div>
-        <div style="font-size:18px;color:#38bdf8;font-weight:bold;">${crop.name[currentLanguage]}</div>
+        <div style="font-size:18px;color:#22c55e;font-weight:bold;">${crop.name[currentLanguage]}</div>
       </div>
     </div>
     
@@ -1316,7 +1680,7 @@ function updateMarketDisplay() {
       <div class="market-item">
         <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:10px;">
           <div>
-            <h4 style="margin:0;color:#38bdf8;">${item.crop[currentLanguage]}</h4>
+            <h4 style="margin:0;color:#22c55e;">${item.crop[currentLanguage]}</h4>
             <div style="color:#94a3b8;font-size:12px;">${lang.location}: ${item.location[currentLanguage]}</div>
           </div>
           <div class="price-tag">${item.price}</div>
@@ -1489,11 +1853,11 @@ function showCropDetails(cropName) {
     <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:15px;">
       <div style="background:#1e293b;padding:10px;border-radius:6px;">
         <div style="color:#94a3b8;font-size:12px;">${lang.idealTemp}</div>
-        <div style="color:#38bdf8;font-weight:bold;">${crop.idealTemp.min}°C - ${crop.idealTemp.max}°C</div>
+        <div style="color:#22c55e;font-weight:bold;">${crop.idealTemp.min}°C - ${crop.idealTemp.max}°C</div>
       </div>
       <div style="background:#1e293b;padding:10px;border-radius:6px;">
         <div style="color:#94a3b8;font-size:12px;">${lang.idealMoisture}</div>
-        <div style="color:#38bdf8;font-weight:bold;">${crop.idealMoisture.min}% - ${crop.idealMoisture.max}%</div>
+        <div style="color:#22c55e;font-weight:bold;">${crop.idealMoisture.min}% - ${crop.idealMoisture.max}%</div>
       </div>
       <div style="background:#1e293b;padding:10px;border-radius:6px;">
         <div style="color:#94a3b8;font-size:12px;">${lang.waterReq}</div>
