@@ -37,22 +37,76 @@ body{
 .login-card{
   background:var(--card);
   padding:30px;
-  width:330px;
+  width:350px;
   border-radius:12px;
   box-shadow:0 0 20px rgba(56,189,248,.35);
 }
-.login-card h2{text-align:center;color:var(--accent)}
+.login-card h2{
+  text-align:center;
+  color:var(--accent);
+  margin-bottom:20px;
+}
+.login-options{
+  display:flex;
+  gap:10px;
+  margin-bottom:20px;
+}
+.login-option{
+  flex:1;
+  padding:10px;
+  text-align:center;
+  border-radius:6px;
+  cursor:pointer;
+  background:#1e293b;
+  border:2px solid transparent;
+  transition:all 0.3s;
+}
+.login-option.active{
+  background:var(--accent);
+  color:white;
+  border-color:var(--accent);
+}
+.language-toggle{
+  position:absolute;
+  top:20px;
+  right:20px;
+  background:#1e293b;
+  padding:5px 10px;
+  border-radius:6px;
+  cursor:pointer;
+  display:flex;
+  gap:8px;
+  align-items:center;
+}
+.lang-btn{
+  padding:5px 10px;
+  border-radius:4px;
+  cursor:pointer;
+  background:transparent;
+  border:none;
+  color:#94a3b8;
+}
+.lang-btn.active{
+  background:#38bdf8;
+  color:white;
+}
 input,button{
   width:100%;
-  padding:10px;
+  padding:12px;
   margin:8px 0;
   border-radius:6px;
   border:none;
+  box-sizing:border-box;
 }
 button{
   background:var(--accent);
+  color:white;
   font-weight:bold;
   cursor:pointer;
+  transition:opacity 0.3s;
+}
+button:hover{
+  opacity:0.9;
 }
 header{
   padding:14px 18px;
@@ -67,8 +121,9 @@ header{
   font-size:12px;
   font-weight:bold;
 }
-.admin{background:#22c55e;color:black}
-.user{background:#facc15;color:black}
+.farmer{background:#22c55e;color:black}
+.buyer{background:#facc15;color:black}
+.admin{background:#8b5cf6;color:white}
 .container{
   padding:18px;
   max-width:1200px;
@@ -92,16 +147,12 @@ header{
   justify-content:space-between;
   align-items:center;
 }
-.card h3 span{
-  font-size:14px;
-  color:#38bdf8;
-  cursor:pointer;
-}
 .logout{
   background:#ef4444;
   padding:6px 14px;
   border-radius:6px;
   cursor:pointer;
+  margin-left:10px;
 }
 canvas{
   background:#fff;
@@ -158,14 +209,6 @@ canvas{
   background:#334155;
   transform:translateY(-2px);
 }
-.crop-item.selected {
-  background:#0f172a;
-  border:2px solid #38bdf8;
-}
-.crop-icon {
-  font-size:24px;
-  margin-bottom:5px;
-}
 .crop-details-modal {
   position:fixed;
   top:50%;
@@ -200,18 +243,6 @@ canvas{
   font-size:20px;
   cursor:pointer;
 }
-.period-indicator {
-  display:inline-block;
-  padding:2px 8px;
-  border-radius:12px;
-  font-size:11px;
-  font-weight:bold;
-  margin-left:5px;
-}
-.kharif {background:#0ea5e9;color:white}
-.rabi {background:#f59e0b;color:white}
-.summer {background:#22c55e;color:white}
-.zayed {background:#8b5cf6;color:white}
 
 /* Live Data Grid */
 .data-grid {
@@ -244,7 +275,6 @@ canvas{
 .data-good {color:#22c55e;}
 .data-warning {color:#facc15;}
 .data-danger {color:#ef4444;}
-.data-normal {color:#38bdf8;}
 
 /* Chart Toggle */
 .chart-toggle {
@@ -275,153 +305,247 @@ canvas{
 .chart-display.active {
   display:block;
 }
+
+/* Buyer Dashboard Styles */
+.market-grid {
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(250px,1fr));
+  gap:15px;
+  margin-top:20px;
+}
+.market-item {
+  background:#1e293b;
+  border-radius:10px;
+  padding:15px;
+  border:1px solid #334155;
+  transition:all 0.3s;
+}
+.market-item:hover {
+  transform:translateY(-5px);
+  border-color:#38bdf8;
+}
+.price-tag {
+  background:#22c55e;
+  color:white;
+  padding:5px 10px;
+  border-radius:15px;
+  font-weight:bold;
+  font-size:14px;
+}
+.quantity-tag {
+  background:#f59e0b;
+  color:black;
+  padding:5px 10px;
+  border-radius:15px;
+  font-weight:bold;
+  font-size:14px;
+}
+.contact-btn {
+  background:#38bdf8;
+  color:white;
+  border:none;
+  padding:8px 15px;
+  border-radius:6px;
+  cursor:pointer;
+  width:100%;
+  margin-top:10px;
+}
 </style>
 </head>
 
 <body>
 
+<!-- Language Toggle -->
+<div class="language-toggle" id="languageToggle">
+  <button class="lang-btn active" onclick="changeLanguage('ta')">தமிழ்</button>
+  <button class="lang-btn" onclick="changeLanguage('en')">English</button>
+</div>
+
 <!-- LOGIN -->
 <div class="center" id="loginPage">
   <div class="login-card">
-    <h2>🔐 Smart Agri Login</h2>
-    <input id="username" placeholder="Username" value="user">
-    <input id="password" type="password" placeholder="Password" value="user123">
-    <button onclick="login()">Login</button>
+    <h2 id="loginTitle">🔐 Smart Agriculture Login</h2>
+    
+    <div class="login-options">
+      <div class="login-option active" id="farmerOption" onclick="selectLoginType('farmer')">
+        👨‍🌾<br><span id="farmerLabel">Farmer</span>
+      </div>
+      <div class="login-option" id="buyerOption" onclick="selectLoginType('buyer')">
+        🛒<br><span id="buyerLabel">Buyer</span>
+      </div>
+    </div>
+    
+    <input id="username" placeholder="Username">
+    <input id="password" type="password" placeholder="Password">
+    <button onclick="login()" id="loginBtn">Login</button>
     <p id="msg"></p>
     <div id="firebaseStatus" class="error"></div>
+    
+    <div style="margin-top:15px;font-size:14px;color:#94a3b8;text-align:center;">
+      <div id="demoCredentials">Demo Credentials:</div>
+      <div><b>Farmer:</b> farmer / farmer123</div>
+      <div><b>Buyer:</b> buyer / buyer123</div>
+    </div>
   </div>
 </div>
 
-<!-- DASHBOARD -->
-<div id="dashboard" style="display:none">
+<!-- FARMER DASHBOARD -->
+<div id="farmerDashboard" style="display:none">
 <header>
   <div>
-    Smart Agriculture Dashboard
+    <span id="dashboardTitle">Smart Agriculture Dashboard</span>
     <span id="roleBadge" class="badge"></span>
   </div>
   <div class="top-actions">
     <span id="connectionStatus" style="color:#facc15;">● Connecting...</span>
-    <span class="logout" onclick="logout()">Logout</span>
+    <span class="logout" onclick="logout()" id="logoutBtn">Logout</span>
   </div>
 </header>
 
 <div class="container">
 
-<!-- USER VIEW -->
-<div id="userView">
-  <div class="grid">
+<div class="grid">
 
-    <div class="card">
-      <h3>🌾 வருங்கால பயிர் பரிந்துரை</h3>
-      <div id="nextMonthRecommendation">
-        <div class="crop-highlight">
-          <div style="color:#38bdf8;font-weight:bold;margin-bottom:8px;">
-            📅 அடுத்த மாதம்: <span id="nextMonthName">--</span>
-          </div>
-          <div style="margin-bottom:8px;">
-            <span id="recommendedCrop">பரிந்துரை செய்யப்படும் பயிர்: --</span>
-          </div>
-          <div style="margin-bottom:8px;">
-            💰 எதிர்பார்க்கப்படும் லாபம்: 
-            <span class="profit-indicator" id="expectedProfit">--</span>
-          </div>
-          <div style="margin-bottom:8px;">
-            ⚠️ அபாய காரணிகள்: 
-            <span class="risk-indicator" id="riskFactors">--</span>
-          </div>
-        </div>
-        
-        <div style="margin-top:15px;">
-          <h4 style="color:#93c5fd;margin-bottom:10px;">🌿 இயற்கை உரங்கள்:</h4>
-          <div id="naturalFertilizers" class="fertilizer-box">
-            தரவு ஏற்றப்படுகிறது...
-          </div>
-        </div>
-        
-        <div style="margin-top:15px;">
-          <h4 style="color:#93c5fd;margin-bottom:10px;">📋 மாற்று பயிர்கள்:</h4>
-          <div id="alternativeCrops" class="crop-grid">
-            <!-- Alternative crops will be added here -->
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="card">
-      <h3>🌱 நில தகவல் (LIVE மானிட்டர்)</h3>
-      
-      <!-- Chart Type Toggle -->
-      <div class="chart-toggle">
-        <button class="toggle-btn active" onclick="switchChartType('gauge')">
-          <i class="bi bi-speedometer2"></i> கேஜ் வரைபடம்
-        </button>
-        <button class="toggle-btn" onclick="switchChartType('line')">
-          <i class="bi bi-graph-up"></i> கோட்டு வரைபடம்
-        </button>
-        <button class="toggle-btn" onclick="switchChartType('radar')">
-          <i class="bi bi-radar"></i> ராடார் வரைபடம்
-        </button>
-      </div>
-      
-      <!-- Gauge Chart Display -->
-      <div class="chart-display active" id="gaugeChartDisplay">
-        <canvas id="gaugeChart"></canvas>
-      </div>
-      
-      <!-- Line Chart Display -->
-      <div class="chart-display" id="lineChartDisplay">
-        <canvas id="lineChart"></canvas>
-      </div>
-      
-      <!-- Radar Chart Display -->
-      <div class="chart-display" id="radarChartDisplay">
-        <canvas id="radarChart"></canvas>
-      </div>
-      
-      <!-- Live Data Grid -->
-      <div class="data-grid">
-        <div class="data-item">
-          <div class="data-label">🌱 மண் ஈரப்பதம்</div>
-          <div class="data-value" id="soilMoistValue">--</div>
-          <div class="data-unit" id="soilMoistUnit">%</div>
-        </div>
-        <div class="data-item">
-          <div class="data-label">🌡 வெப்பநிலை</div>
-          <div class="data-value" id="tempValue">--</div>
-          <div class="data-unit" id="tempUnit">°C</div>
-        </div>
-        <div class="data-item">
-          <div class="data-label">💧 காற்று ஈரப்பதம்</div>
-          <div class="data-value" id="humidityValue">--</div>
-          <div class="data-unit" id="humidityUnit">%</div>
-        </div>
-        <div class="data-item">
-          <div class="data-label">🧪 மண் நைட்ரேட்</div>
-          <div class="data-value" id="nitrateValue">--</div>
-          <div class="data-unit" id="nitrateUnit">ppm</div>
-        </div>
-      </div>
-      
-      <!-- Crop Recommendation Details -->
-      <div style="margin-top:20px;padding:15px;background:#1e293b;border-radius:8px;">
-        <h4 style="color:#93c5fd;margin-top:0;margin-bottom:10px;">🎯 பரிந்துரைக்கப்பட்ட பயிர் தகவல்:</h4>
-        <div id="cropDetails">
-          தரவு கிடைத்தவுடன் பயிர் விவரங்கள் இங்கே காண்பிக்கப்படும்...
-        </div>
-      </div>
-    </div>
-
-  </div>
-</div>
-
-<!-- ADMIN VIEW -->
-<div id="adminView" style="margin-top:20px;display:none">
   <div class="card">
-    <h3>👑 User-1 Field Data (Graph)</h3>
-    <canvas id="adminChart"></canvas>
+    <h3 id="cropRecTitle">🌾 Future Crop Recommendation</h3>
+    <div id="nextMonthRecommendation">
+      <div class="crop-highlight">
+        <div style="color:#38bdf8;font-weight:bold;margin-bottom:8px;">
+          📅 <span id="nextMonthLabel">Next Month:</span> <span id="nextMonthName">--</span>
+        </div>
+        <div style="margin-bottom:8px;">
+          <span id="recommendedCropLabel">Recommended Crop: --</span>
+        </div>
+        <div style="margin-bottom:8px;">
+          💰 <span id="expectedProfitLabel">Expected Profit:</span> 
+          <span class="profit-indicator" id="expectedProfit">--</span>
+        </div>
+        <div style="margin-bottom:8px;">
+          ⚠️ <span id="riskFactorsLabel">Risk Factors:</span> 
+          <span class="risk-indicator" id="riskFactors">--</span>
+        </div>
+      </div>
+      
+      <div style="margin-top:15px;">
+        <h4 style="color:#93c5fd;margin-bottom:10px;" id="fertilizerTitle">🌿 Natural Fertilizers:</h4>
+        <div id="naturalFertilizers" class="fertilizer-box">
+          Loading data...
+        </div>
+      </div>
+      
+      <div style="margin-top:15px;">
+        <h4 style="color:#93c5fd;margin-bottom:10px;" id="alternativeCropsTitle">📋 Alternative Crops:</h4>
+        <div id="alternativeCrops" class="crop-grid">
+          <!-- Alternative crops will be added here -->
+        </div>
+      </div>
+    </div>
   </div>
+
+  <div class="card">
+    <h3 id="liveDataTitle">🌱 Field Information (LIVE Monitor)</h3>
+    
+    <!-- Chart Type Toggle -->
+    <div class="chart-toggle">
+      <button class="toggle-btn active" onclick="switchChartType('gauge')">
+        <i class="bi bi-speedometer2"></i> <span id="gaugeChartLabel">Gauge Chart</span>
+      </button>
+      <button class="toggle-btn" onclick="switchChartType('line')">
+        <i class="bi bi-graph-up"></i> <span id="lineChartLabel">Line Chart</span>
+      </button>
+    </div>
+    
+    <!-- Gauge Chart Display -->
+    <div class="chart-display active" id="gaugeChartDisplay">
+      <canvas id="gaugeChart"></canvas>
+    </div>
+    
+    <!-- Line Chart Display -->
+    <div class="chart-display" id="lineChartDisplay">
+      <canvas id="lineChart"></canvas>
+    </div>
+    
+    <!-- Live Data Grid -->
+    <div class="data-grid">
+      <div class="data-item">
+        <div class="data-label" id="soilMoistLabel">Soil Moisture</div>
+        <div class="data-value" id="soilMoistValue">--</div>
+        <div class="data-unit">%</div>
+      </div>
+      <div class="data-item">
+        <div class="data-label" id="tempLabel">Temperature</div>
+        <div class="data-value" id="tempValue">--</div>
+        <div class="data-unit">°C</div>
+      </div>
+      <div class="data-item">
+        <div class="data-label" id="humidityLabel">Humidity</div>
+        <div class="data-value" id="humidityValue">--</div>
+        <div class="data-unit">%</div>
+      </div>
+      <div class="data-item">
+        <div class="data-label" id="nitrateLabel">Soil Nitrate</div>
+        <div class="data-value" id="nitrateValue">--</div>
+        <div class="data-unit">ppm</div>
+      </div>
+    </div>
+    
+    <!-- Crop Recommendation Details -->
+    <div style="margin-top:20px;padding:15px;background:#1e293b;border-radius:8px;">
+      <h4 style="color:#93c5fd;margin-top:0;margin-bottom:10px;" id="cropDetailsTitle">🎯 Recommended Crop Details:</h4>
+      <div id="cropDetails">
+        Crop details will appear here...
+      </div>
+    </div>
+  </div>
+
+</div>
+</div>
 </div>
 
+<!-- BUYER DASHBOARD -->
+<div id="buyerDashboard" style="display:none">
+<header>
+  <div>
+    <span id="buyerDashboardTitle">Agricultural Market Dashboard</span>
+    <span id="buyerRoleBadge" class="badge"></span>
+  </div>
+  <div class="top-actions">
+    <span id="buyerConnectionStatus" style="color:#facc15;">● Connecting...</span>
+    <span class="logout" onclick="logout()" id="buyerLogoutBtn">Logout</span>
+  </div>
+</header>
+
+<div class="container">
+  <div class="card">
+    <h3 id="marketTitle">🛒 Available Crops in Market</h3>
+    
+    <!-- Search and Filter -->
+    <div style="margin-bottom:20px;display:flex;gap:10px;">
+      <input type="text" id="searchCrop" placeholder="Search crops..." style="flex:1;">
+      <select id="filterLocation" style="padding:10px;border-radius:6px;background:#1e293b;color:white;border:1px solid #334155;">
+        <option value="">All Locations</option>
+        <option value="coimbatore">Coimbatore</option>
+        <option value="madurai">Madurai</option>
+        <option value="tiruchi">Tiruchirappalli</option>
+        <option value="salem">Salem</option>
+        <option value="chennai">Chennai</option>
+      </select>
+    </div>
+    
+    <!-- Market Grid -->
+    <div class="market-grid" id="marketGrid">
+      <!-- Market items will be loaded here -->
+      <div style="text-align:center;padding:40px;color:#94a3b8;" id="loadingMarket">
+        Loading market data...
+      </div>
+    </div>
+  </div>
+  
+  <!-- Price Trends -->
+  <div class="card" style="margin-top:20px;">
+    <h3 id="priceTrendTitle">📈 Crop Price Trends</h3>
+    <canvas id="priceChart"></canvas>
+  </div>
 </div>
 </div>
 
@@ -459,60 +583,346 @@ try {
   document.getElementById('firebaseStatus').innerHTML = "✗ Firebase error: " + error.message;
 }
 
+/* ---------- Language Support ---------- */
+const translations = {
+  ta: {
+    // Login Page
+    loginTitle: "🔐 ஸ்மார்ட் விவசாய உள்நுழைவு",
+    farmerLabel: "விவசாயி",
+    buyerLabel: "வாங்குபவர்",
+    usernamePlaceholder: "பயனர் பெயர்",
+    passwordPlaceholder: "கடவுச்சொல்",
+    loginBtn: "உள்நுழைவு",
+    demoCredentials: "டெமோ கடவுச்சொற்கள்:",
+    
+    // Farmer Dashboard
+    dashboardTitle: "ஸ்மார்ட் விவசாய டாஷ்போர்டு",
+    logoutBtn: "வெளியேறு",
+    cropRecTitle: "🌾 வருங்கால பயிர் பரிந்துரை",
+    nextMonthLabel: "அடுத்த மாதம்:",
+    recommendedCropLabel: "பரிந்துரை செய்யப்படும் பயிர்:",
+    expectedProfitLabel: "எதிர்பார்க்கப்படும் லாபம்:",
+    riskFactorsLabel: "அபாய காரணிகள்:",
+    fertilizerTitle: "🌿 இயற்கை உரங்கள்:",
+    alternativeCropsTitle: "📋 மாற்று பயிர்கள்:",
+    liveDataTitle: "🌱 நில தகவல் (நேரடி மானிட்டர்)",
+    gaugeChartLabel: "கேஜ் வரைபடம்",
+    lineChartLabel: "கோட்டு வரைபடம்",
+    soilMoistLabel: "மண் ஈரப்பதம்",
+    tempLabel: "வெப்பநிலை",
+    humidityLabel: "காற்று ஈரப்பதம்",
+    nitrateLabel: "மண் நைட்ரேட்",
+    cropDetailsTitle: "🎯 பரிந்துரைக்கப்பட்ட பயிர் தகவல்:",
+    
+    // Buyer Dashboard
+    buyerDashboardTitle: "விவசாய சந்தை டாஷ்போர்டு",
+    marketTitle: "🛒 சந்தையில் கிடைக்கும் பயிர்கள்",
+    searchPlaceholder: "பயிர்களை தேடு...",
+    priceTrendTitle: "📈 பயிர் விலை போக்குகள்",
+    locationAll: "எல்லா இடங்களும்",
+    locationCoimbatore: "கோயம்புத்தூர்",
+    locationMadurai: "மதுரை",
+    locationTiruchi: "திருச்சி",
+    locationSalem: "சேலம்",
+    locationChennai: "சென்னை",
+    
+    // Market Items
+    price: "விலை",
+    quantity: "அளவு",
+    location: "இடம்",
+    grade: "தரம்",
+    contactFarmer: "விவசாயியை தொடர்பு கொள்ள",
+    noItems: "பயிர்கள் கிடைக்கவில்லை",
+    
+    // Crop Details
+    idealTemp: "இலட்சிய வெப்பநிலை",
+    idealMoisture: "இலட்சிய மண் ஈரப்பதம்",
+    waterReq: "நீர் தேவை",
+    duration: "கால அளவு",
+    high: "அதிகம்",
+    medium: "மிதமானது",
+    low: "குறைந்தது"
+  },
+  en: {
+    // Login Page
+    loginTitle: "🔐 Smart Agriculture Login",
+    farmerLabel: "Farmer",
+    buyerLabel: "Buyer",
+    usernamePlaceholder: "Username",
+    passwordPlaceholder: "Password",
+    loginBtn: "Login",
+    demoCredentials: "Demo Credentials:",
+    
+    // Farmer Dashboard
+    dashboardTitle: "Smart Agriculture Dashboard",
+    logoutBtn: "Logout",
+    cropRecTitle: "🌾 Future Crop Recommendation",
+    nextMonthLabel: "Next Month:",
+    recommendedCropLabel: "Recommended Crop:",
+    expectedProfitLabel: "Expected Profit:",
+    riskFactorsLabel: "Risk Factors:",
+    fertilizerTitle: "🌿 Natural Fertilizers:",
+    alternativeCropsTitle: "📋 Alternative Crops:",
+    liveDataTitle: "🌱 Field Information (LIVE Monitor)",
+    gaugeChartLabel: "Gauge Chart",
+    lineChartLabel: "Line Chart",
+    soilMoistLabel: "Soil Moisture",
+    tempLabel: "Temperature",
+    humidityLabel: "Humidity",
+    nitrateLabel: "Soil Nitrate",
+    cropDetailsTitle: "🎯 Recommended Crop Details:",
+    
+    // Buyer Dashboard
+    buyerDashboardTitle: "Agricultural Market Dashboard",
+    marketTitle: "🛒 Available Crops in Market",
+    searchPlaceholder: "Search crops...",
+    priceTrendTitle: "📈 Crop Price Trends",
+    locationAll: "All Locations",
+    locationCoimbatore: "Coimbatore",
+    locationMadurai: "Madurai",
+    locationTiruchi: "Tiruchirappalli",
+    locationSalem: "Salem",
+    locationChennai: "Chennai",
+    
+    // Market Items
+    price: "Price",
+    quantity: "Quantity",
+    location: "Location",
+    grade: "Grade",
+    contactFarmer: "Contact Farmer",
+    noItems: "No crops available",
+    
+    // Crop Details
+    idealTemp: "Ideal Temperature",
+    idealMoisture: "Ideal Soil Moisture",
+    waterReq: "Water Requirement",
+    duration: "Duration",
+    high: "High",
+    medium: "Medium",
+    low: "Low"
+  }
+};
+
 /* ---------- Tamil Agricultural Database ---------- */
-const tamilMonthNames = [
-  "சித்திரை", "வைகாசி", "ஆனி", "ஆடி", 
-  "ஆவணி", "புரட்டாசி", "ஐப்பசி", "கார்த்திகை", 
-  "மார்கழி", "தை", "மாசி", "பங்குனி"
-];
+const tamilMonthNames = ["சித்திரை", "வைகாசி", "ஆனி", "ஆடி", "ஆவணி", "புரட்டாசி", "ஐப்பசி", "கார்த்திகை", "மார்கழி", "தை", "மாசி", "பங்குனி"];
+const englishMonthNames = ["April", "May", "June", "July", "August", "September", "October", "November", "December", "January", "February", "March"];
 
-const englishMonthNames = [
-  "April", "May", "June", "July", 
-  "August", "September", "October", "November", 
-  "December", "January", "February", "March"
-];
-
-// Crop database (same as before, truncated for brevity)
+// Crop database
 const cropDatabase = [
   {
-    name: "நெல் (குருவை)",
-    english: "Paddy (Kuruvai)",
+    name: { ta: "நெல் (குருவை)", en: "Paddy (Kuruvai)" },
     icon: "🌾",
-    seasons: ["Kharif", "Kuruvai"],
+    seasons: ["Kharif"],
     sowingMonths: [5, 6],
     harvestMonths: [8, 9],
     idealTemp: { min: 25, max: 35 },
     idealMoisture: { min: 60, max: 80 },
-    naturalFertilizers: ["பஞ்சகவ்யம்", "மாட்டுச் சாணம்", "நீர்வாழ் பாசி", "பசுந்தழை உரம்"],
-    profitRange: "₹40,000 - ₹60,000/ஏக்கர்",
-    risk: "குறைந்தது",
-    duration: "90-120 நாட்கள்",
-    waterReq: "அதிகம்",
-    marketDemand: "உயர்ந்தது"
+    naturalFertilizers: { 
+      ta: ["பஞ்சகவ்யம்", "மாட்டுச் சாணம்", "நீர்வாழ் பாசி"], 
+      en: ["Panchagavya", "Cow Dung Manure", "Seaweed Extract"] 
+    },
+    profitRange: { ta: "₹40,000 - ₹60,000/ஏக்கர்", en: "₹40,000 - ₹60,000/acre" },
+    risk: { ta: "குறைந்தது", en: "Low" },
+    duration: { ta: "90-120 நாட்கள்", en: "90-120 days" },
+    waterReq: { ta: "அதிகம்", en: "High" }
   },
-  // ... other crops (same as before)
+  {
+    name: { ta: "சோளம்", en: "Maize" },
+    icon: "🌽",
+    seasons: ["Kharif", "Rabi"],
+    sowingMonths: [5, 6, 9, 10],
+    harvestMonths: [8, 9, 0, 1],
+    idealTemp: { min: 22, max: 30 },
+    idealMoisture: { min: 50, max: 70 },
+    naturalFertilizers: { 
+      ta: ["ஜீவாமிருதம்", "வேம்பு புண்ணாக்கு"], 
+      en: ["Jeevamrutha", "Neem Cake"] 
+    },
+    profitRange: { ta: "₹30,000 - ₹45,000/ஏக்கர்", en: "₹30,000 - ₹45,000/acre" },
+    risk: { ta: "குறைந்தது", en: "Low" },
+    duration: { ta: "85-100 நாட்கள்", en: "85-100 days" },
+    waterReq: { ta: "மிதமானது", en: "Medium" }
+  },
+  {
+    name: { ta: "கடலை", en: "Groundnut" },
+    icon: "🥜",
+    seasons: ["Summer", "Kharif"],
+    sowingMonths: [0, 1, 5, 6],
+    harvestMonths: [2, 3, 8, 9],
+    idealTemp: { min: 25, max: 35 },
+    idealMoisture: { min: 40, max: 60 },
+    naturalFertilizers: { 
+      ta: ["வேம்பு புண்ணாக்கு", "மாட்டுச் சாணம்"], 
+      en: ["Neem Cake", "Cow Dung Manure"] 
+    },
+    profitRange: { ta: "₹50,000 - ₹75,000/ஏக்கர்", en: "₹50,000 - ₹75,000/acre" },
+    risk: { ta: "மிதமானது", en: "Medium" },
+    duration: { ta: "100-120 நாட்கள்", en: "100-120 days" },
+    waterReq: { ta: "குறைந்தது", en: "Low" }
+  },
+  {
+    name: { ta: "மிளகாய்", en: "Chilli" },
+    icon: "🌶️",
+    seasons: ["Samba", "Rabi"],
+    sowingMonths: [7, 8, 9, 10],
+    harvestMonths: [0, 1, 2, 3],
+    idealTemp: { min: 20, max: 30 },
+    idealMoisture: { min: 50, max: 70 },
+    naturalFertilizers: { 
+      ta: ["மீன் உரம்", "கொட்டைப் பிண்ணாக்கு"], 
+      en: ["Fish Emulsion", "Castor Cake"] 
+    },
+    profitRange: { ta: "₹60,000 - ₹90,000/ஏக்கர்", en: "₹60,000 - ₹90,000/acre" },
+    risk: { ta: "அதிகம்", en: "High" },
+    duration: { ta: "120-150 நாட்கள்", en: "120-150 days" },
+    waterReq: { ta: "மிதமானது", en: "Medium" }
+  }
 ];
 
-// Natural fertilizers database (same as before)
-const fertilizerDatabase = {
-  "பஞ்சகவ்யம்": {
-    description: "5 வகை பசுவின் பொருட்கள் (பால், தயிர், நெய், சாணநீர், சிறுநீர்)",
-    benefits: ["விரைவு வளர்ச்சி", "நோய் எதிர்ப்பு சக்தி", "மண்ணின் ஊட்டச்சத்து"],
-    preparation: "பால் 1லி, தயிர் 1லி, நெய் 500மி.லி, சாணநீர் 1லி, சிறுநீர் 1லி - கலந்து 5 நாட்கள் கிளறவும்",
-    application: "5-10% செறிவில் நீரில் கலந்து தெளிக்கவும்"
+// Market database
+const marketDatabase = [
+  { 
+    crop: { ta: "நெல்", en: "Paddy" }, 
+    price: "₹28/kg", 
+    quantity: { ta: "5000 கிலோ", en: "5000 kg" }, 
+    location: { ta: "கோயம்புத்தூர்", en: "Coimbatore" },
+    grade: "A",
+    farmer: "முருகன்",
+    phone: "+91 98765 43210"
   },
-  // ... other fertilizers
-};
+  { 
+    crop: { ta: "சோளம்", en: "Maize" }, 
+    price: "₹22/kg", 
+    quantity: { ta: "3000 கிலோ", en: "3000 kg" }, 
+    location: { ta: "மதுரை", en: "Madurai" },
+    grade: "B+",
+    farmer: "ராஜேந்திரன்",
+    phone: "+91 87654 32109"
+  },
+  { 
+    crop: { ta: "கடலை", en: "Groundnut" }, 
+    price: "₹80/kg", 
+    quantity: { ta: "2000 கிலோ", en: "2000 kg" }, 
+    location: { ta: "திருச்சி", en: "Tiruchirappalli" },
+    grade: "A+",
+    farmer: "செல்வம்",
+    phone: "+91 76543 21098"
+  },
+  { 
+    crop: { ta: "மிளகாய்", en: "Chilli" }, 
+    price: "₹120/kg", 
+    quantity: { ta: "1000 கிலோ", en: "1000 kg" }, 
+    location: { ta: "சேலம்", en: "Salem" },
+    grade: "A",
+    farmer: "கணேஷ்",
+    phone: "+91 65432 10987"
+  },
+  { 
+    crop: { ta: "வாழை", en: "Banana" }, 
+    price: "₹25/kg", 
+    quantity: { ta: "4000 கிலோ", en: "4000 kg" }, 
+    location: { ta: "கோயம்புத்தூர்", en: "Coimbatore" },
+    grade: "B+",
+    farmer: "பழனிச்சாமி",
+    phone: "+91 94321 09876"
+  }
+];
 
 /* ---------- Globals ---------- */
+let currentLanguage = 'ta';
+let currentUserType = 'farmer';
 let role = "";
-let adminChart = null;
 let gaugeChart = null;
 let lineChart = null;
-let radarChart = null;
+let priceChart = null;
 let selectedCrop = null;
 let fieldHistory = [];
 const MAX_HISTORY = 20;
+
+/* ---------- Language Functions ---------- */
+function changeLanguage(lang) {
+  currentLanguage = lang;
+  
+  // Update language toggle buttons
+  document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.remove('active'));
+  event.target.classList.add('active');
+  
+  // Update all text elements
+  updateLanguage();
+}
+
+function updateLanguage() {
+  const lang = translations[currentLanguage];
+  
+  // Update login page
+  document.getElementById('loginTitle').textContent = lang.loginTitle;
+  document.getElementById('farmerLabel').textContent = lang.farmerLabel;
+  document.getElementById('buyerLabel').textContent = lang.buyerLabel;
+  document.getElementById('username').placeholder = lang.usernamePlaceholder;
+  document.getElementById('password').placeholder = lang.passwordPlaceholder;
+  document.getElementById('loginBtn').textContent = lang.loginBtn;
+  document.getElementById('demoCredentials').textContent = lang.demoCredentials;
+  
+  // Update farmer dashboard
+  document.getElementById('dashboardTitle').textContent = lang.dashboardTitle;
+  document.getElementById('logoutBtn').textContent = lang.logoutBtn;
+  document.getElementById('cropRecTitle').textContent = lang.cropRecTitle;
+  document.getElementById('nextMonthLabel').textContent = lang.nextMonthLabel;
+  document.getElementById('expectedProfitLabel').textContent = lang.expectedProfitLabel;
+  document.getElementById('riskFactorsLabel').textContent = lang.riskFactorsLabel;
+  document.getElementById('fertilizerTitle').textContent = lang.fertilizerTitle;
+  document.getElementById('alternativeCropsTitle').textContent = lang.alternativeCropsTitle;
+  document.getElementById('liveDataTitle').textContent = lang.liveDataTitle;
+  document.getElementById('gaugeChartLabel').textContent = lang.gaugeChartLabel;
+  document.getElementById('lineChartLabel').textContent = lang.lineChartLabel;
+  document.getElementById('soilMoistLabel').textContent = lang.soilMoistLabel;
+  document.getElementById('tempLabel').textContent = lang.tempLabel;
+  document.getElementById('humidityLabel').textContent = lang.humidityLabel;
+  document.getElementById('nitrateLabel').textContent = lang.nitrateLabel;
+  document.getElementById('cropDetailsTitle').textContent = lang.cropDetailsTitle;
+  
+  // Update buyer dashboard
+  document.getElementById('buyerDashboardTitle').textContent = lang.buyerDashboardTitle;
+  document.getElementById('buyerLogoutBtn').textContent = lang.logoutBtn;
+  document.getElementById('marketTitle').textContent = lang.marketTitle;
+  document.getElementById('searchCrop').placeholder = lang.searchPlaceholder;
+  document.getElementById('priceTrendTitle').textContent = lang.priceTrendTitle;
+  
+  // Update select options
+  const locationSelect = document.getElementById('filterLocation');
+  if (locationSelect) {
+    locationSelect.options[0].text = lang.locationAll;
+    locationSelect.options[1].text = lang.locationCoimbatore;
+    locationSelect.options[2].text = lang.locationMadurai;
+    locationSelect.options[3].text = lang.locationTiruchi;
+    locationSelect.options[4].text = lang.locationSalem;
+    locationSelect.options[5].text = lang.locationChennai;
+  }
+  
+  // Update market items if buyer dashboard is active
+  if (role === 'buyer') {
+    updateMarketDisplay();
+  }
+  
+  // Update crop display if farmer dashboard is active
+  if (role === 'farmer' && selectedCrop) {
+    updateCropDisplayForLanguage();
+  }
+}
+
+/* ---------- Login Type Selection ---------- */
+function selectLoginType(type) {
+  currentUserType = type;
+  
+  // Update UI
+  document.querySelectorAll('.login-option').forEach(opt => opt.classList.remove('active'));
+  event.target.classList.add('active');
+  
+  // Clear inputs
+  document.getElementById('username').value = '';
+  document.getElementById('password').value = '';
+  document.getElementById('msg').textContent = '';
+}
 
 /* ---------- Login ---------- */
 window.login = () => {
@@ -521,34 +931,54 @@ window.login = () => {
   const msg = document.getElementById('msg');
   
   if (!isFirebaseInitialized) {
-    msg.innerText = "❌ Firebase not initialized. Check console.";
+    msg.innerText = currentLanguage === 'ta' ? "❌ Firebase இணைக்கப்படவில்லை" : "❌ Firebase not initialized";
     msg.style.color = "red";
     return;
   }
   
-  if (username === "admin" && password === "admin123") {
-    role = "admin";
-    showDashboard();
-    startFirebaseListeners();
-  } else if (username === "user" && password === "user123") {
-    role = "user";
-    showDashboard();
-    startFirebaseListeners();
-  } else {
-    msg.innerText = "❌ தவறான Login";
-    msg.style.color = "red";
+  // Farmer login
+  if (currentUserType === 'farmer') {
+    if (username === "farmer" && password === "farmer123") {
+      role = "farmer";
+      showFarmerDashboard();
+      startFirebaseListeners();
+    } else {
+      msg.innerText = currentLanguage === 'ta' ? "❌ தவறான உள்நுழைவு" : "❌ Invalid login";
+      msg.style.color = "red";
+    }
+  }
+  // Buyer login
+  else if (currentUserType === 'buyer') {
+    if (username === "buyer" && password === "buyer123") {
+      role = "buyer";
+      showBuyerDashboard();
+      startBuyerFirebaseListeners();
+    } else {
+      msg.innerText = currentLanguage === 'ta' ? "❌ தவறான உள்நுழைவு" : "❌ Invalid login";
+      msg.style.color = "red";
+    }
   }
 };
 
-function showDashboard(){
+function showFarmerDashboard(){
   document.getElementById('loginPage').style.display = "none";
-  document.getElementById('dashboard').style.display = "block";
-  document.getElementById('roleBadge').innerText = role.toUpperCase();
-  document.getElementById('roleBadge').className = "badge " + role;
-  document.getElementById('adminView').style.display = (role === "admin") ? "block" : "none";
+  document.getElementById('farmerDashboard').style.display = "block";
+  document.getElementById('roleBadge').textContent = currentLanguage === 'ta' ? 'விவசாயி' : 'FARMER';
+  document.getElementById('roleBadge').className = "badge farmer";
+  updateLanguage();
 }
 
-/* ---------- Chart Switching ---------- */
+function showBuyerDashboard(){
+  document.getElementById('loginPage').style.display = "none";
+  document.getElementById('buyerDashboard').style.display = "block";
+  document.getElementById('buyerRoleBadge').textContent = currentLanguage === 'ta' ? 'வாங்குபவர்' : 'BUYER';
+  document.getElementById('buyerRoleBadge').className = "badge buyer";
+  updateLanguage();
+  updateMarketDisplay();
+  createPriceChart();
+}
+
+/* ---------- Chart Functions ---------- */
 function switchChartType(type) {
   // Update toggle buttons
   document.querySelectorAll('.toggle-btn').forEach(btn => btn.classList.remove('active'));
@@ -561,84 +991,51 @@ function switchChartType(type) {
   document.getElementById(`${type}ChartDisplay`).classList.add('active');
 }
 
-/* ---------- Create Gauge Chart ---------- */
 function createGaugeChart(data) {
   const ctx = document.getElementById('gaugeChart').getContext('2d');
   
   if (gaugeChart) gaugeChart.destroy();
   
   gaugeChart = new Chart(ctx, {
-    type: 'radialGauge',
+    type: 'radar',
     data: {
+      labels: [
+        currentLanguage === 'ta' ? 'மண் ஈரப்பதம்' : 'Soil Moisture',
+        currentLanguage === 'ta' ? 'வெப்பநிலை' : 'Temperature',
+        currentLanguage === 'ta' ? 'காற்று ஈரப்பதம்' : 'Humidity',
+        currentLanguage === 'ta' ? 'மண் நைட்ரேட்' : 'Soil Nitrate'
+      ],
       datasets: [{
+        label: currentLanguage === 'ta' ? 'தற்போதைய மதிப்புகள்' : 'Current Values',
         data: [
           data.soilMoist || 0,
           data.soilTemp || 0,
           data.humidity || 0,
           data.nitrate || 0
         ],
-        backgroundColor: [
-          'rgba(34, 197, 94, 0.7)',
-          'rgba(239, 68, 68, 0.7)',
-          'rgba(56, 189, 248, 0.7)',
-          'rgba(168, 85, 247, 0.7)'
-        ],
-        borderColor: [
-          '#22c55e',
-          '#ef4444',
-          '#38bdf8',
-          '#a855f7'
-        ],
-        borderWidth: 2,
-        label: 'Field Parameters'
-      }],
-      labels: ['Soil Moisture', 'Temperature', 'Humidity', 'Nitrate']
+        backgroundColor: 'rgba(56, 189, 248, 0.2)',
+        borderColor: '#38bdf8',
+        pointBackgroundColor: '#38bdf8'
+      }]
     },
     options: {
       responsive: true,
       scales: {
         r: {
-          min: 0,
-          max: 100,
-          ticks: {
-            stepSize: 20,
-            display: true
-          },
-          pointLabels: {
-            display: true,
-            font: {
-              size: 14
-            }
-          }
-        }
-      },
-      plugins: {
-        legend: {
-          display: true,
-          position: 'bottom'
-        },
-        tooltip: {
-          callbacks: {
-            label: function(context) {
-              const label = context.label || '';
-              const value = context.raw || 0;
-              const units = ['%', '°C', '%', 'ppm'];
-              return `${label}: ${value}${units[context.dataIndex]}`;
-            }
-          }
+          beginAtZero: true,
+          max: 100
         }
       }
     }
   });
 }
 
-/* ---------- Create Line Chart ---------- */
 function createLineChart(history) {
   const ctx = document.getElementById('lineChart').getContext('2d');
   
   if (lineChart) lineChart.destroy();
   
-  const labels = history.map((_, i) => `${i * 5} sec ago`);
+  const labels = history.map((_, i) => `${i * 5}s`);
   const soilMoistData = history.map(d => d.soilMoist);
   const tempData = history.map(d => d.soilTemp);
   const humidityData = history.map(d => d.humidity);
@@ -650,108 +1047,79 @@ function createLineChart(history) {
       labels: labels,
       datasets: [
         {
-          label: 'Soil Moisture (%)',
+          label: currentLanguage === 'ta' ? 'மண் ஈரப்பதம் (%)' : 'Soil Moisture (%)',
           data: soilMoistData,
           borderColor: '#22c55e',
           backgroundColor: 'rgba(34, 197, 94, 0.1)',
-          fill: true,
           tension: 0.4
         },
         {
-          label: 'Temperature (°C)',
+          label: currentLanguage === 'ta' ? 'வெப்பநிலை (°C)' : 'Temperature (°C)',
           data: tempData,
           borderColor: '#ef4444',
           backgroundColor: 'rgba(239, 68, 68, 0.1)',
-          fill: true,
           tension: 0.4
         },
         {
-          label: 'Humidity (%)',
+          label: currentLanguage === 'ta' ? 'காற்று ஈரப்பதம் (%)' : 'Humidity (%)',
           data: humidityData,
           borderColor: '#38bdf8',
           backgroundColor: 'rgba(56, 189, 248, 0.1)',
-          fill: true,
           tension: 0.4
         },
         {
-          label: 'Nitrate (ppm)',
+          label: currentLanguage === 'ta' ? 'நைட்ரேட் (ppm)' : 'Nitrate (ppm)',
           data: nitrateData,
           borderColor: '#a855f7',
           backgroundColor: 'rgba(168, 85, 247, 0.1)',
-          fill: true,
           tension: 0.4
         }
       ]
     },
     options: {
-      responsive: true,
-      interaction: {
-        mode: 'index',
-        intersect: false
-      },
-      scales: {
-        y: {
-          beginAtZero: true,
-          title: {
-            display: true,
-            text: 'Value'
-          }
-        },
-        x: {
-          title: {
-            display: true,
-            text: 'Time'
-          }
-        }
-      }
+      responsive: true
     }
   });
 }
 
-/* ---------- Create Radar Chart ---------- */
-function createRadarChart(data) {
-  const ctx = document.getElementById('radarChart').getContext('2d');
+function createPriceChart() {
+  const ctx = document.getElementById('priceChart').getContext('2d');
   
-  if (radarChart) radarChart.destroy();
+  if (priceChart) priceChart.destroy();
   
-  radarChart = new Chart(ctx, {
-    type: 'radar',
+  priceChart = new Chart(ctx, {
+    type: 'line',
     data: {
-      labels: ['Soil Moisture', 'Temperature', 'Humidity', 'Nitrate', 'Lightning Risk'],
-      datasets: [{
-        label: 'Current Values',
-        data: [
-          data.soilMoist || 0,
-          data.soilTemp || 0,
-          data.humidity || 0,
-          data.nitrate || 0,
-          data.lightning ? 80 : 20
-        ],
-        backgroundColor: 'rgba(56, 189, 248, 0.2)',
-        borderColor: '#38bdf8',
-        pointBackgroundColor: '#38bdf8',
-        pointBorderColor: '#fff',
-        pointHoverBackgroundColor: '#fff',
-        pointHoverBorderColor: '#38bdf8'
-      }, {
-        label: 'Ideal Range',
-        data: [70, 28, 65, 50, 20],
-        backgroundColor: 'rgba(34, 197, 94, 0.2)',
-        borderColor: '#22c55e',
-        pointBackgroundColor: '#22c55e',
-        pointBorderColor: '#fff',
-        pointHoverBackgroundColor: '#fff',
-        pointHoverBorderColor: '#22c55e'
-      }]
+      labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+      datasets: [
+        {
+          label: currentLanguage === 'ta' ? 'நெல் விலை' : 'Paddy Price',
+          data: [25, 26, 27, 28, 27, 28],
+          borderColor: '#22c55e',
+          backgroundColor: 'rgba(34, 197, 94, 0.1)'
+        },
+        {
+          label: currentLanguage === 'ta' ? 'சோளம் விலை' : 'Maize Price',
+          data: [20, 21, 22, 22, 21, 22],
+          borderColor: '#f59e0b',
+          backgroundColor: 'rgba(245, 158, 11, 0.1)'
+        },
+        {
+          label: currentLanguage === 'ta' ? 'கடலை விலை' : 'Groundnut Price',
+          data: [75, 78, 80, 82, 80, 81],
+          borderColor: '#8b5cf6',
+          backgroundColor: 'rgba(139, 92, 246, 0.1)'
+        }
+      ]
     },
     options: {
       responsive: true,
       scales: {
-        r: {
-          beginAtZero: true,
-          max: 100,
-          ticks: {
-            stepSize: 20
+        y: {
+          beginAtZero: false,
+          title: {
+            display: true,
+            text: currentLanguage === 'ta' ? 'விலை (₹/கிலோ)' : 'Price (₹/kg)'
           }
         }
       }
@@ -761,75 +1129,55 @@ function createRadarChart(data) {
 
 /* ---------- Update Data Display ---------- */
 function updateDataDisplay(data) {
-  // Update numeric values with color coding
   const soilMoist = data.soilMoist || 0;
   const temp = data.soilTemp || 0;
   const humidity = data.humidity || 0;
   const nitrate = data.nitrate || 0;
   
-  // Soil Moisture
-  const soilMoistEl = document.getElementById('soilMoistValue');
-  soilMoistEl.textContent = soilMoist;
-  soilMoistEl.className = soilMoist >= 60 ? 'data-value data-good' : 
-                         soilMoist >= 40 ? 'data-value data-warning' : 
-                         'data-value data-danger';
+  // Update values
+  document.getElementById('soilMoistValue').textContent = soilMoist;
+  document.getElementById('tempValue').textContent = temp;
+  document.getElementById('humidityValue').textContent = humidity;
+  document.getElementById('nitrateValue').textContent = nitrate;
   
-  // Temperature
-  const tempEl = document.getElementById('tempValue');
-  tempEl.textContent = temp;
-  tempEl.className = temp >= 20 && temp <= 32 ? 'data-value data-good' : 
-                     temp > 32 && temp <= 38 ? 'data-value data-warning' : 
-                     'data-value data-danger';
-  
-  // Humidity
-  const humidityEl = document.getElementById('humidityValue');
-  humidityEl.textContent = humidity;
-  humidityEl.className = humidity >= 60 && humidity <= 80 ? 'data-value data-good' : 
-                        humidity >= 40 && humidity < 60 ? 'data-value data-warning' : 
-                        'data-value data-danger';
-  
-  // Nitrate
-  const nitrateEl = document.getElementById('nitrateValue');
-  nitrateEl.textContent = nitrate;
-  nitrateEl.className = nitrate >= 40 && nitrate <= 60 ? 'data-value data-good' : 
-                       nitrate >= 20 && nitrate < 40 ? 'data-value data-warning' : 
-                       'data-value data-danger';
+  // Color coding
+  document.getElementById('soilMoistValue').className = soilMoist >= 60 ? 'data-value data-good' : 
+                     soilMoist >= 40 ? 'data-value data-warning' : 'data-value data-danger';
+  document.getElementById('tempValue').className = temp >= 20 && temp <= 32 ? 'data-value data-good' : 
+                     temp > 32 && temp <= 38 ? 'data-value data-warning' : 'data-value data-danger';
+  document.getElementById('humidityValue').className = humidity >= 60 && humidity <= 80 ? 'data-value data-good' : 
+                     humidity >= 40 && humidity < 60 ? 'data-value data-warning' : 'data-value data-danger';
+  document.getElementById('nitrateValue').className = nitrate >= 40 && nitrate <= 60 ? 'data-value data-good' : 
+                     nitrate >= 20 && nitrate < 40 ? 'data-value data-warning' : 'data-value data-danger';
 }
 
-/* ---------- Get Next Month Recommendation ---------- */
+/* ---------- Crop Recommendation ---------- */
 function getNextMonthRecommendation(currentMonth, fieldData) {
   const nextMonth = (currentMonth + 1) % 12;
-  const nextMonthName = tamilMonthNames[nextMonth];
-  const englishNextMonth = englishMonthNames[nextMonth];
+  const monthName = currentLanguage === 'ta' ? tamilMonthNames[nextMonth] : englishMonthNames[nextMonth];
   
-  document.getElementById('nextMonthName').textContent = `${nextMonthName} (${englishNextMonth})`;
+  document.getElementById('nextMonthName').textContent = monthName;
   
-  // Filter crops suitable for next month
-  const suitableCrops = cropDatabase.filter(crop => 
-    crop.sowingMonths.includes(nextMonth)
-  );
+  const suitableCrops = cropDatabase.filter(crop => crop.sowingMonths.includes(nextMonth));
   
   if (suitableCrops.length === 0) {
     return {
-      crop: "பரிந்துரைக்கப்படும் பயிர் இல்லை",
-      profit: "கிடைக்கவில்லை",
-      risk: "அதிகம்",
+      crop: currentLanguage === 'ta' ? "பரிந்துரைக்கப்படும் பயிர் இல்லை" : "No crop recommended",
+      profit: currentLanguage === 'ta' ? "கிடைக்கவில்லை" : "Not available",
+      risk: currentLanguage === 'ta' ? "அதிகம்" : "High",
       alternatives: []
     };
   }
   
-  // Sort by profit potential
   suitableCrops.sort((a, b) => {
-    const profitA = parseInt(a.profitRange.split('-')[0].replace(/[^0-9]/g, ''));
-    const profitB = parseInt(b.profitRange.split('-')[0].replace(/[^0-9]/g, ''));
+    const profitA = parseInt(a.profitRange[currentLanguage].split('-')[0].replace(/[^0-9]/g, ''));
+    const profitB = parseInt(b.profitRange[currentLanguage].split('-')[0].replace(/[^0-9]/g, ''));
     return profitB - profitA;
   });
   
-  // Get top 3 crops
   const topCrops = suitableCrops.slice(0, 3);
-  const alternatives = suitableCrops.slice(1, 6);
+  const alternatives = suitableCrops.slice(1, 4);
   
-  // Select best crop based on field conditions
   let bestCrop = topCrops[0];
   const soilMoist = fieldData?.soilMoist || 50;
   
@@ -843,24 +1191,22 @@ function getNextMonthRecommendation(currentMonth, fieldData) {
   selectedCrop = bestCrop;
   
   return {
-    crop: bestCrop.name,
-    english: bestCrop.english,
-    profit: bestCrop.profitRange,
-    risk: bestCrop.risk,
+    crop: bestCrop.name[currentLanguage],
+    profit: bestCrop.profitRange[currentLanguage],
+    risk: bestCrop.risk[currentLanguage],
     alternatives: alternatives,
-    fertilizers: bestCrop.naturalFertilizers
+    fertilizers: bestCrop.naturalFertilizers[currentLanguage]
   };
 }
 
-/* ---------- Update Crop Display ---------- */
 function updateCropDisplay(recommendation) {
-  document.getElementById('recommendedCrop').innerHTML = 
-    `<span style="color:#38bdf8;font-size:18px;">${recommendation.crop}</span> (${recommendation.english})`;
+  document.getElementById('recommendedCropLabel').innerHTML = 
+    `<span style="color:#38bdf8;font-size:18px;">${recommendation.crop}</span>`;
   
   document.getElementById('expectedProfit').textContent = recommendation.profit;
   document.getElementById('riskFactors').textContent = recommendation.risk;
   
-  // Update natural fertilizers
+  // Update fertilizers
   const fertilizerElement = document.getElementById('naturalFertilizers');
   if (recommendation.fertilizers && recommendation.fertilizers.length > 0) {
     let fertilizerHTML = '<div style="font-size:14px;">';
@@ -877,10 +1223,9 @@ function updateCropDisplay(recommendation) {
     let alternativeHTML = '';
     recommendation.alternatives.forEach((crop, index) => {
       alternativeHTML += `
-        <div class="crop-item" onclick="showCropDetails('${crop.name}')" title="${crop.english}">
+        <div class="crop-item" onclick="showCropDetails('${crop.name.en}')" title="${crop.name[currentLanguage]}">
           <div class="crop-icon">${crop.icon}</div>
-          <div style="font-size:13px;">${crop.name}</div>
-          <div style="font-size:11px;color:#94a3b8;">${crop.english}</div>
+          <div style="font-size:13px;">${crop.name[currentLanguage]}</div>
         </div>
       `;
     });
@@ -893,31 +1238,282 @@ function updateCropDisplay(recommendation) {
   }
 }
 
-/* ---------- Show Crop Details ---------- */
+function updateCropDisplayForLanguage() {
+  if (!selectedCrop) return;
+  
+  const recommendation = {
+    crop: selectedCrop.name[currentLanguage],
+    profit: selectedCrop.profitRange[currentLanguage],
+    risk: selectedCrop.risk[currentLanguage],
+    fertilizers: selectedCrop.naturalFertilizers[currentLanguage],
+    alternatives: []
+  };
+  
+  updateCropDisplay(recommendation);
+  updateCropDetails(selectedCrop);
+}
+
+function updateCropDetails(crop) {
+  const detailsElement = document.getElementById('cropDetails');
+  const lang = translations[currentLanguage];
+  
+  let detailsHTML = `
+    <div style="display:flex;align-items:center;gap:15px;margin-bottom:15px;">
+      <div style="font-size:40px;">${crop.icon}</div>
+      <div>
+        <div style="font-size:18px;color:#38bdf8;font-weight:bold;">${crop.name[currentLanguage]}</div>
+      </div>
+    </div>
+    
+    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;">
+      <div>
+        <div style="color:#94a3b8;font-size:12px;">${lang.idealTemp}</div>
+        <div style="color:#e5e7eb;font-size:14px;">${crop.idealTemp.min}°C - ${crop.idealTemp.max}°C</div>
+      </div>
+      <div>
+        <div style="color:#94a3b8;font-size:12px;">${lang.idealMoisture}</div>
+        <div style="color:#e5e7eb;font-size:14px;">${crop.idealMoisture.min}% - ${crop.idealMoisture.max}%</div>
+      </div>
+      <div>
+        <div style="color:#94a3b8;font-size:12px;">${lang.waterReq}</div>
+        <div style="color:#22c55e;font-size:14px;font-weight:bold;">${crop.waterReq[currentLanguage]}</div>
+      </div>
+      <div>
+        <div style="color:#94a3b8;font-size:12px;">${lang.duration}</div>
+        <div style="color:#e5e7eb;font-size:14px;">${crop.duration[currentLanguage]}</div>
+      </div>
+    </div>
+  `;
+  
+  detailsElement.innerHTML = detailsHTML;
+}
+
+/* ---------- Market Functions ---------- */
+function updateMarketDisplay() {
+  const marketGrid = document.getElementById('marketGrid');
+  const searchTerm = document.getElementById('searchCrop')?.value.toLowerCase() || '';
+  const locationFilter = document.getElementById('filterLocation')?.value || '';
+  const lang = translations[currentLanguage];
+  
+  let filteredItems = marketDatabase.filter(item => {
+    const matchesSearch = item.crop[currentLanguage].toLowerCase().includes(searchTerm);
+    const matchesLocation = !locationFilter || item.location[currentLanguage].toLowerCase().includes(locationFilter);
+    return matchesSearch && matchesLocation;
+  });
+  
+  if (filteredItems.length === 0) {
+    marketGrid.innerHTML = `
+      <div style="text-align:center;padding:40px;color:#94a3b8;grid-column:1/-1;">
+        ${lang.noItems}
+      </div>
+    `;
+    return;
+  }
+  
+  let marketHTML = '';
+  filteredItems.forEach(item => {
+    marketHTML += `
+      <div class="market-item">
+        <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:10px;">
+          <div>
+            <h4 style="margin:0;color:#38bdf8;">${item.crop[currentLanguage]}</h4>
+            <div style="color:#94a3b8;font-size:12px;">${lang.location}: ${item.location[currentLanguage]}</div>
+          </div>
+          <div class="price-tag">${item.price}</div>
+        </div>
+        
+        <div style="display:flex;justify-content:space-between;margin-bottom:10px;">
+          <div>
+            <div style="color:#94a3b8;font-size:12px;">${lang.quantity}</div>
+            <div style="color:#e5e7eb;font-weight:bold;">${item.quantity[currentLanguage]}</div>
+          </div>
+          <div>
+            <div style="color:#94a3b8;font-size:12px;">${lang.grade}</div>
+            <div style="color:#facc15;font-weight:bold;">${item.grade}</div>
+          </div>
+        </div>
+        
+        <div style="margin-bottom:10px;">
+          <div style="color:#94a3b8;font-size:12px;">${currentLanguage === 'ta' ? 'விவசாயி' : 'Farmer'}</div>
+          <div style="color:#e5e7eb;">${item.farmer}</div>
+        </div>
+        
+        <button class="contact-btn" onclick="contactFarmer('${item.farmer}', '${item.phone}')">
+          ${lang.contactFarmer}
+        </button>
+      </div>
+    `;
+  });
+  
+  marketGrid.innerHTML = marketHTML;
+}
+
+function contactFarmer(farmerName, phone) {
+  alert(`${currentLanguage === 'ta' ? 'தொடர்பு கொள்ளவும்:' : 'Contact:'} ${farmerName}\n${currentLanguage === 'ta' ? 'தொலைபேசி:' : 'Phone:'} ${phone}`);
+}
+
+/* ---------- Firebase Listeners ---------- */
+function startFirebaseListeners() {
+  if (!isFirebaseInitialized) return;
+
+  // Connection status
+  const connectedRef = firebase.database().ref(".info/connected");
+  connectedRef.on("value", function(snap) {
+    const statusEl = document.getElementById('connectionStatus');
+    if (snap.val() === true) {
+      statusEl.innerHTML = currentLanguage === 'ta' ? "● இணைக்கப்பட்டது" : "● Connected";
+      statusEl.style.color = "#22c55e";
+    } else {
+      statusEl.innerHTML = currentLanguage === 'ta' ? "● இணைக்கப்படவில்லை" : "● Disconnected";
+      statusEl.style.color = "#ef4444";
+    }
+  });
+
+  // Field data
+  const fieldRef = firebase.database().ref("agri");
+  fieldRef.on("value", function(snap) {
+    const allData = snap.val();
+    if (!allData) return;
+    
+    let fieldData = allData.field1 || allData.Field1 || allData;
+    
+    if (fieldData) {
+      // Add to history
+      fieldHistory.push({
+        soilMoist: fieldData.soilMoist || 0,
+        soilTemp: fieldData.soilTemp || 0,
+        humidity: fieldData.humidity || 0,
+        nitrate: fieldData.nitrate || 0
+      });
+      
+      if (fieldHistory.length > MAX_HISTORY) {
+        fieldHistory.shift();
+      }
+      
+      // Update displays
+      updateDataDisplay(fieldData);
+      createGaugeChart(fieldData);
+      createLineChart(fieldHistory);
+      
+      // Get recommendation
+      const currentMonth = new Date().getMonth();
+      const recommendation = getNextMonthRecommendation(currentMonth, fieldData);
+      updateCropDisplay(recommendation);
+    }
+  });
+}
+
+function startBuyerFirebaseListeners() {
+  if (!isFirebaseInitialized) return;
+
+  const connectedRef = firebase.database().ref(".info/connected");
+  connectedRef.on("value", function(snap) {
+    const statusEl = document.getElementById('buyerConnectionStatus');
+    if (snap.val() === true) {
+      statusEl.innerHTML = currentLanguage === 'ta' ? "● இணைக்கப்பட்டது" : "● Connected";
+      statusEl.style.color = "#22c55e";
+    } else {
+      statusEl.innerHTML = currentLanguage === 'ta' ? "● இணைக்கப்படவில்லை" : "● Disconnected";
+      statusEl.style.color = "#ef4444";
+    }
+  });
+}
+
+/* ---------- Logout ---------- */
+window.logout = () => {
+  if (isFirebaseInitialized) {
+    firebase.database().ref("agri").off();
+    firebase.database().ref(".info/connected").off();
+  }
+  
+  // Hide all dashboards
+  document.getElementById('farmerDashboard').style.display = "none";
+  document.getElementById('buyerDashboard').style.display = "none";
+  
+  // Show login page
+  document.getElementById('loginPage').style.display = "flex";
+  
+  // Reset
+  role = "";
+  selectedCrop = null;
+  fieldHistory = [];
+};
+
+/* ---------- Event Listeners ---------- */
+document.getElementById('modalOverlay')?.addEventListener('click', closeModal);
+
+// Search and filter event listeners
+document.addEventListener('DOMContentLoaded', function() {
+  const searchInput = document.getElementById('searchCrop');
+  const locationSelect = document.getElementById('filterLocation');
+  
+  if (searchInput) {
+    searchInput.addEventListener('input', updateMarketDisplay);
+  }
+  
+  if (locationSelect) {
+    locationSelect.addEventListener('change', updateMarketDisplay);
+  }
+});
+
+// Test data function
+window.addTestData = function() {
+  if (!isFirebaseInitialized) return;
+  
+  const testData = {
+    soilMoist: Math.floor(Math.random() * 30) + 40,
+    soilTemp: Math.floor(Math.random() * 15) + 25,
+    humidity: Math.floor(Math.random() * 40) + 40,
+    nitrate: Math.floor(Math.random() * 30) + 30
+  };
+  
+  firebase.database().ref("agri/field1").set(testData);
+  
+  alert(currentLanguage === 'ta' ? "டெஸ்ட் தரவு சேர்க்கப்பட்டது!" : "Test data added!");
+};
+
 function showCropDetails(cropName) {
-  const crop = cropDatabase.find(c => c.name === cropName);
+  const crop = cropDatabase.find(c => c.name.en === cropName);
   if (!crop) return;
   
   selectedCrop = crop;
-  updateCropDetails(crop);
+  const lang = translations[currentLanguage];
   
-  // Show modal
-  document.getElementById('modalCropName').textContent = `${crop.icon} ${crop.name}`;
+  document.getElementById('modalCropName').textContent = `${crop.icon} ${crop.name[currentLanguage]}`;
   
   let detailsHTML = `
     <div style="margin-bottom:15px;">
-      <div style="color:#94a3b8;margin-bottom:5px;">English: <b style="color:#e5e7eb;">${crop.english}</b></div>
+      <div style="color:#94a3b8;margin-bottom:5px;">${currentLanguage === 'ta' ? 'ஆங்கிலம்:' : 'English:'} <b style="color:#e5e7eb;">${crop.name.en}</b></div>
+    </div>
+    
+    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:15px;">
+      <div style="background:#1e293b;padding:10px;border-radius:6px;">
+        <div style="color:#94a3b8;font-size:12px;">${lang.idealTemp}</div>
+        <div style="color:#38bdf8;font-weight:bold;">${crop.idealTemp.min}°C - ${crop.idealTemp.max}°C</div>
+      </div>
+      <div style="background:#1e293b;padding:10px;border-radius:6px;">
+        <div style="color:#94a3b8;font-size:12px;">${lang.idealMoisture}</div>
+        <div style="color:#38bdf8;font-weight:bold;">${crop.idealMoisture.min}% - ${crop.idealMoisture.max}%</div>
+      </div>
+      <div style="background:#1e293b;padding:10px;border-radius:6px;">
+        <div style="color:#94a3b8;font-size:12px;">${lang.waterReq}</div>
+        <div style="color:#22c55e;font-weight:bold;">${crop.waterReq[currentLanguage]}</div>
+      </div>
+      <div style="background:#1e293b;padding:10px;border-radius:6px;">
+        <div style="color:#94a3b8;font-size:12px;">${lang.duration}</div>
+        <div style="color:#facc15;font-weight:bold;">${crop.duration[currentLanguage]}</div>
+      </div>
     </div>
     
     <div style="background:#1e293b;padding:15px;border-radius:6px;margin-bottom:15px;">
-      <div style="color:#facc15;font-weight:bold;margin-bottom:10px;">💰 எதிர்பார்க்கப்படும் லாபம்:</div>
-      <div style="font-size:20px;color:#22c55e;text-align:center;">${crop.profitRange}</div>
+      <div style="color:#facc15;font-weight:bold;margin-bottom:10px;">💰 ${lang.expectedProfitLabel}</div>
+      <div style="font-size:20px;color:#22c55e;text-align:center;">${crop.profitRange[currentLanguage]}</div>
     </div>
     
     <div style="background:#1e293b;padding:15px;border-radius:6px;">
-      <div style="color:#facc15;font-weight:bold;margin-bottom:10px;">🌿 பரிந்துரைக்கப்படும் இயற்கை உரங்கள்:</div>
+      <div style="color:#facc15;font-weight:bold;margin-bottom:10px;">🌿 ${lang.fertilizerTitle}</div>
       <ul style="margin:0;padding-left:20px;">
-        ${crop.naturalFertilizers.map(fert => `<li style="margin-bottom:5px;">${fert}</li>`).join('')}
+        ${crop.naturalFertilizers[currentLanguage].map(fert => `<li style="margin-bottom:5px;">${fert}</li>`).join('')}
       </ul>
     </div>
   `;
@@ -931,170 +1527,6 @@ function closeModal() {
   document.getElementById('modalOverlay').style.display = 'none';
   document.getElementById('cropDetailsModal').style.display = 'none';
 }
-
-/* ---------- Update Crop Details ---------- */
-function updateCropDetails(crop) {
-  const detailsElement = document.getElementById('cropDetails');
-  
-  let detailsHTML = `
-    <div style="display:flex;align-items:center;gap:15px;margin-bottom:15px;">
-      <div style="font-size:40px;">${crop.icon}</div>
-      <div>
-        <div style="font-size:18px;color:#38bdf8;font-weight:bold;">${crop.name}</div>
-        <div style="color:#94a3b8;font-size:14px;">${crop.english}</div>
-      </div>
-    </div>
-    
-    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;">
-      <div>
-        <div style="color:#94a3b8;font-size:12px;">இலட்சிய மண் ஈரப்பதம்</div>
-        <div style="color:#e5e7eb;font-size:14px;">${crop.idealMoisture.min}% - ${crop.idealMoisture.max}%</div>
-      </div>
-      <div>
-        <div style="color:#94a3b8;font-size:12px;">இலட்சிய வெப்பநிலை</div>
-        <div style="color:#e5e7eb;font-size:14px;">${crop.idealTemp.min}°C - ${crop.idealTemp.max}°C</div>
-      </div>
-      <div>
-        <div style="color:#94a3b8;font-size:12px;">நீர் தேவை</div>
-        <div style="color:#22c55e;font-size:14px;font-weight:bold;">${crop.waterReq}</div>
-      </div>
-      <div>
-        <div style="color:#94a3b8;font-size:12px;">கால அளவு</div>
-        <div style="color:#e5e7eb;font-size:14px;">${crop.duration}</div>
-      </div>
-    </div>
-  `;
-  
-  detailsElement.innerHTML = detailsHTML;
-}
-
-/* ---------- Firebase listeners ---------- */
-function startFirebaseListeners() {
-  if (!isFirebaseInitialized) {
-    console.error("Firebase not initialized");
-    return;
-  }
-
-  // Update connection status
-  const connectedRef = firebase.database().ref(".info/connected");
-  connectedRef.on("value", function(snap) {
-    const statusEl = document.getElementById('connectionStatus');
-    if (snap.val() === true) {
-      statusEl.innerHTML = "● Connected";
-      statusEl.style.color = "#22c55e";
-    } else {
-      statusEl.innerHTML = "● Disconnected";
-      statusEl.style.color = "#ef4444";
-    }
-  });
-
-  /* Field live data */
-  const fieldRef = firebase.database().ref("agri");
-  fieldRef.on("value", function(snap) {
-    console.log("Firebase data received:", snap.val());
-    
-    const allData = snap.val();
-    if (!allData) {
-      document.getElementById('liveData').innerHTML = "❌ No data in Firebase";
-      return;
-    }
-    
-    let fieldData = allData.field1 || allData.Field1 || allData;
-    
-    if (fieldData) {
-      // Add to history for line chart
-      fieldHistory.push({
-        soilMoist: fieldData.soilMoist || 0,
-        soilTemp: fieldData.soilTemp || 0,
-        humidity: fieldData.humidity || 0,
-        nitrate: fieldData.nitrate || 0,
-        timestamp: new Date().toLocaleTimeString()
-      });
-      
-      // Keep only last 20 readings
-      if (fieldHistory.length > MAX_HISTORY) {
-        fieldHistory.shift();
-      }
-      
-      // Update data display
-      updateDataDisplay(fieldData);
-      
-      // Update charts
-      createGaugeChart(fieldData);
-      createLineChart(fieldHistory);
-      createRadarChart(fieldData);
-      
-      // Get current month and recommendation
-      const currentMonth = new Date().getMonth();
-      const recommendation = getNextMonthRecommendation(currentMonth, fieldData);
-      updateCropDisplay(recommendation);
-
-      if (role === "admin") {
-        const adminChartEl = document.getElementById('adminChart').getContext('2d');
-        if (adminChart) adminChart.destroy();
-        adminChart = new Chart(adminChartEl, {
-          type:"bar",
-          data:{
-            labels:["Soil Moisture","Temperature","Humidity","Nitrate"],
-            datasets:[{
-              label:"User-1 Field Data",
-              data:[
-                fieldData.soilMoist || 0,
-                fieldData.soilTemp || 0,
-                fieldData.humidity || 0,
-                fieldData.nitrate || 0
-              ],
-              backgroundColor:"#22c55e"
-            }]
-          },
-          options:{
-            responsive:true,
-            scales: {
-              y: {
-                beginAtZero: true
-              }
-            }
-          }
-        });
-      }
-    }
-  }, function(error) {
-    console.error("Firebase read failed:", error);
-    document.getElementById('liveData').innerHTML = `❌ Error: ${error.message}`;
-  });
-}
-
-/* ---------- Logout ---------- */
-window.logout = () => {
-  if (isFirebaseInitialized) {
-    firebase.database().ref("agri").off();
-    firebase.database().ref(".info/connected").off();
-  }
-  
-  document.getElementById('dashboard').style.display = "none";
-  document.getElementById('loginPage').style.display = "flex";
-  role = "";
-};
-
-// Close modal when clicking overlay
-document.getElementById('modalOverlay').addEventListener('click', closeModal);
-
-// Add test data function
-window.addTestData = function() {
-  if (!isFirebaseInitialized) return;
-  
-  const testData = {
-    soilMoist: Math.floor(Math.random() * 30) + 40,
-    soilTemp: Math.floor(Math.random() * 15) + 25,
-    humidity: Math.floor(Math.random() * 40) + 40,
-    nitrate: Math.floor(Math.random() * 30) + 30,
-    lightning: { level: "Low" }
-  };
-  
-  firebase.database().ref("agri/field1").set(testData);
-  
-  alert("Test data added to Firebase!");
-};
 </script>
 
 </body>
