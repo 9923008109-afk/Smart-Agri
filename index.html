@@ -117,69 +117,101 @@ canvas{
 }
 .error{color:#f87171;font-size:14px;margin-top:10px;}
 
-/* Table Styles */
-.season-table {
-  width:100%;
-  border-collapse:collapse;
-  margin-top:15px;
-  display:none;
-}
-.season-table.active {
-  display:table;
-}
-.season-table th {
-  background:#1e293b;
-  color:#38bdf8;
+/* Crop Recommendation Styles */
+.crop-highlight {
+  background:linear-gradient(135deg, #22c55e20, #38bdf820);
+  border-left:4px solid #22c55e;
   padding:12px;
-  text-align:left;
-  border-bottom:2px solid var(--accent);
-}
-.season-table td {
-  padding:12px;
-  border-bottom:1px solid var(--border);
-}
-.season-table tr:hover {
-  background:#1e293b;
-}
-.season-table .trend-up {
-  color:#22c55e;
-}
-.season-table .trend-down {
-  color:#ef4444;
-}
-.season-table .trend-neutral {
-  color:#facc15;
-}
-
-/* View Toggle */
-.view-toggle {
-  display:flex;
-  gap:10px;
-  margin-bottom:15px;
-  background:#1e293b;
-  padding:5px;
-  border-radius:8px;
-  width:fit-content;
-}
-.view-btn {
-  padding:6px 12px;
   border-radius:6px;
+  margin:10px 0;
+}
+.fertilizer-box {
+  background:#1e293b;
+  padding:10px;
+  border-radius:6px;
+  margin-top:10px;
+  border:1px solid #334155;
+}
+.profit-indicator {
+  color:#22c55e;
+  font-weight:bold;
+}
+.risk-indicator {
+  color:#facc15;
+  font-weight:bold;
+}
+.crop-grid {
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(180px,1fr));
+  gap:10px;
+  margin-top:10px;
+}
+.crop-item {
+  background:#1e293b;
+  padding:10px;
+  border-radius:6px;
+  text-align:center;
   cursor:pointer;
-  border:none;
-  background:transparent;
-  color:#94a3b8;
-  font-size:14px;
+  transition:all 0.3s;
 }
-.view-btn.active {
-  background:#38bdf8;
-  color:white;
+.crop-item:hover {
+  background:#334155;
+  transform:translateY(-2px);
 }
-.chart-container {
+.crop-item.selected {
+  background:#0f172a;
+  border:2px solid #38bdf8;
+}
+.crop-icon {
+  font-size:24px;
+  margin-bottom:5px;
+}
+.crop-details-modal {
+  position:fixed;
+  top:50%;
+  left:50%;
+  transform:translate(-50%,-50%);
+  background:#0f172a;
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:20px;
+  width:90%;
+  max-width:500px;
+  z-index:1000;
   display:none;
 }
-.chart-container.active {
-  display:block;
+.modal-overlay {
+  position:fixed;
+  top:0;
+  left:0;
+  right:0;
+  bottom:0;
+  background:rgba(0,0,0,0.8);
+  z-index:999;
+  display:none;
 }
+.close-modal {
+  position:absolute;
+  top:10px;
+  right:10px;
+  background:none;
+  border:none;
+  color:#94a3b8;
+  font-size:20px;
+  cursor:pointer;
+}
+.period-indicator {
+  display:inline-block;
+  padding:2px 8px;
+  border-radius:12px;
+  font-size:11px;
+  font-weight:bold;
+  margin-left:5px;
+}
+.kharif {background:#0ea5e9;color:white}
+.rabi {background:#f59e0b;color:white}
+.summer {background:#22c55e;color:white}
+.zayed {background:#8b5cf6;color:white}
 </style>
 </head>
 
@@ -217,68 +249,56 @@ canvas{
   <div class="grid">
 
     <div class="card">
-      <h3>📅 அடுத்த மாதம் சிறந்த பயிர்</h3>
-      🌾 <b id="nextCrop">--</b><br><br>
-      🌿 இயற்கை உரம்:<br>
-      <b id="fertilizer">--</b>
+      <h3>🌾 வருங்கால பயிர் பரிந்துரை</h3>
+      <div id="nextMonthRecommendation">
+        <div class="crop-highlight">
+          <div style="color:#38bdf8;font-weight:bold;margin-bottom:8px;">
+            📅 அடுத்த மாதம்: <span id="nextMonthName">--</span>
+          </div>
+          <div style="margin-bottom:8px;">
+            <span id="recommendedCrop">பரிந்துரை செய்யப்படும் பயிர்: --</span>
+          </div>
+          <div style="margin-bottom:8px;">
+            💰 எதிர்பார்க்கப்படும் லாபம்: 
+            <span class="profit-indicator" id="expectedProfit">--</span>
+          </div>
+          <div style="margin-bottom:8px;">
+            ⚠️ அபாய காரணிகள்: 
+            <span class="risk-indicator" id="riskFactors">--</span>
+          </div>
+        </div>
+        
+        <div style="margin-top:15px;">
+          <h4 style="color:#93c5fd;margin-bottom:10px;">🌿 இயற்கை உரங்கள்:</h4>
+          <div id="naturalFertilizers" class="fertilizer-box">
+            தரவு ஏற்றப்படுகிறது...
+          </div>
+        </div>
+        
+        <div style="margin-top:15px;">
+          <h4 style="color:#93c5fd;margin-bottom:10px;">📋 மாற்று பயிர்கள்:</h4>
+          <div id="alternativeCrops" class="crop-grid">
+            <!-- Alternative crops will be added here -->
+          </div>
+        </div>
+      </div>
     </div>
 
     <div class="card">
       <h3>🌱 நில தகவல் (LIVE)</h3>
       <div id="liveData">Waiting for data…</div>
+      
+      <div style="margin-top:20px;padding:15px;background:#1e293b;border-radius:8px;">
+        <h4 style="color:#93c5fd;margin-top:0;margin-bottom:10px;">🎯 பரிந்துரைக்கப்பட்ட பயிர் தகவல்:</h4>
+        <div id="cropDetails">
+          தரவு கிடைத்தவுடன் பயிர் விவரங்கள் இங்கே காண்பிக்கப்படும்...
+        </div>
+      </div>
     </div>
 
     <div class="card">
-      <h3>
-        📊 பருவ விளைச்சல்
-        <span id="toggleView" onclick="toggleTableView()" title="பார்வையை மாற்று">
-          <i class="bi bi-table"></i> அட்டவணை
-        </span>
-      </h3>
-      
-      <!-- View Toggle -->
-      <div class="view-toggle">
-        <button class="view-btn active" onclick="switchView('chart')">
-          <i class="bi bi-bar-chart"></i> வரைபடம்
-        </button>
-        <button class="view-btn" onclick="switchView('table')">
-          <i class="bi bi-table"></i> அட்டவணை
-        </button>
-      </div>
-      
-      <!-- Chart View -->
-      <div class="chart-container active" id="chartView">
-        <canvas id="seasonChart"></canvas>
-      </div>
-      
-      <!-- Table View -->
-      <div class="chart-container" id="tableView">
-        <table class="season-table" id="seasonTable">
-          <thead>
-            <tr>
-              <th>பருவம்</th>
-              <th>விளைச்சல் (%)</th>
-              <th>முந்தைய விளைச்சல்</th>
-              <th>மாற்றம்</th>
-              <th>நிலை</th>
-            </tr>
-          </thead>
-          <tbody id="seasonTableBody">
-            <tr>
-              <td colspan="5" style="text-align:center;color:#94a3b8;">
-                தரவு ஏற்றப்படுகிறது...
-              </td>
-            </tr>
-          </tbody>
-          <tfoot>
-            <tr id="seasonSummary">
-              <td colspan="5" style="text-align:center;padding:15px;">
-                சராசரி விளைச்சல்: <b id="avgYield">--</b>%
-              </td>
-            </tr>
-          </tfoot>
-        </table>
-      </div>
+      <h3>📊 பருவ விளைச்சல்</h3>
+      <canvas id="seasonChart"></canvas>
     </div>
 
   </div>
@@ -293,6 +313,14 @@ canvas{
 </div>
 
 </div>
+</div>
+
+<!-- Crop Details Modal -->
+<div class="modal-overlay" id="modalOverlay"></div>
+<div class="crop-details-modal" id="cropDetailsModal">
+  <button class="close-modal" onclick="closeModal()">×</button>
+  <h3 style="color:#38bdf8;margin-top:0;" id="modalCropName"></h3>
+  <div id="modalCropDetails"></div>
 </div>
 
 <!-- FIREBASE + LOGIC -->
@@ -321,12 +349,238 @@ try {
   document.getElementById('firebaseStatus').innerHTML = "✗ Firebase error: " + error.message;
 }
 
+/* ---------- Tamil Agricultural Database ---------- */
+const tamilMonthNames = [
+  "சித்திரை", "வைகாசி", "ஆனி", "ஆடி", 
+  "ஆவணி", "புரட்டாசி", "ஐப்பசி", "கார்த்திகை", 
+  "மார்கழி", "தை", "மாசி", "பங்குனி"
+];
+
+const englishMonthNames = [
+  "April", "May", "June", "July", 
+  "August", "September", "October", "November", 
+  "December", "January", "February", "March"
+];
+
+// Comprehensive crop database for Tamil Nadu
+const cropDatabase = [
+  {
+    name: "நெல் (குருவை)",
+    english: "Paddy (Kuruvai)",
+    icon: "🌾",
+    seasons: ["Kharif", "Kuruvai"],
+    sowingMonths: [5, 6], // June-July
+    harvestMonths: [8, 9], // September-October
+    idealTemp: { min: 25, max: 35 },
+    idealMoisture: { min: 60, max: 80 },
+    naturalFertilizers: ["பஞ்சகவ்யம்", "மாட்டுச் சாணம்", "நீர்வாழ் பாசி", "பசுந்தழை உரம்"],
+    profitRange: "₹40,000 - ₹60,000/ஏக்கர்",
+    risk: "குறைந்தது",
+    duration: "90-120 நாட்கள்",
+    waterReq: "அதிகம்",
+    marketDemand: "உயர்ந்தது"
+  },
+  {
+    name: "நெல் (சம்பா)",
+    english: "Paddy (Samba)",
+    icon: "🌾",
+    seasons: ["Samba"],
+    sowingMonths: [7, 8], // August-September
+    harvestMonths: [0, 1], // January-February
+    idealTemp: { min: 22, max: 32 },
+    idealMoisture: { min: 65, max: 85 },
+    naturalFertilizers: ["வேப்பம் புண்ணாக்கு", "மீன் உரம்", "கோழிக் கழிவு", "நேத்ராப்பிரியா"],
+    profitRange: "₹45,000 - ₹65,000/ஏக்கர்",
+    risk: "மிதமானது",
+    duration: "135-150 நாட்கள்",
+    waterReq: "அதிகம்",
+    marketDemand: "உயர்ந்தது"
+  },
+  {
+    name: "சோளம் (கருப்பு)",
+    english: "Maize (Kharif)",
+    icon: "🌽",
+    seasons: ["Kharif"],
+    sowingMonths: [5, 6], // June-July
+    harvestMonths: [8, 9], // September-October
+    idealTemp: { min: 22, max: 30 },
+    idealMoisture: { min: 50, max: 70 },
+    naturalFertilizers: ["ஜீவாமிருதம்", "வேம்பு புண்ணாக்கு", "கொட்டைப் பிண்ணாக்கு", "வெள்ளைப்பூச்சி உரம்"],
+    profitRange: "₹30,000 - ₹45,000/ஏக்கர்",
+    risk: "குறைந்தது",
+    duration: "85-100 நாட்கள்",
+    waterReq: "மிதமானது",
+    marketDemand: "நல்லது"
+  },
+  {
+    name: "சோளம் (ரபி)",
+    english: "Maize (Rabi)",
+    icon: "🌽",
+    seasons: ["Rabi"],
+    sowingMonths: [9, 10], // October-November
+    harvestMonths: [0, 1], // January-February
+    idealTemp: { min: 18, max: 28 },
+    idealMoisture: { min: 45, max: 65 },
+    naturalFertilizers: ["கம்போஸ்ட்", "மாட்டுச் சாணம்", "வேம்பு புண்ணாக்கு", "மீன் உரம்"],
+    profitRange: "₹35,000 - ₹50,000/ஏக்கர்",
+    risk: "மிதமானது",
+    duration: "90-110 நாட்கள்",
+    waterReq: "மிதமானது",
+    marketDemand: "நல்லது"
+  },
+  {
+    name: "கடலை",
+    english: "Groundnut",
+    icon: "🥜",
+    seasons: ["Summer", "Kharif"],
+    sowingMonths: [0, 1, 5, 6], // Jan-Feb, June-July
+    harvestMonths: [2, 3, 8, 9], // March-April, September-October
+    idealTemp: { min: 25, max: 35 },
+    idealMoisture: { min: 40, max: 60 },
+    naturalFertilizers: ["வேம்பு புண்ணாக்கு", "மாட்டுச் சாணம்", "ராக்காசியா பாசி", "மீன் உரம்"],
+    profitRange: "₹50,000 - ₹75,000/ஏக்கர்",
+    risk: "மிதமானது",
+    duration: "100-120 நாட்கள்",
+    waterReq: "குறைந்தது",
+    marketDemand: "உயர்ந்தது"
+  },
+  {
+    name: "பச்சைப் பயறு",
+    english: "Green Gram",
+    icon: "🫘",
+    seasons: ["Kharif", "Rabi"],
+    sowingMonths: [5, 6, 9, 10], // June-July, October-November
+    harvestMonths: [7, 8, 0, 1], // August-September, January-February
+    idealTemp: { min: 25, max: 35 },
+    idealMoisture: { min: 40, max: 60 },
+    naturalFertilizers: ["பச்சைத் தழை உரம்", "மாட்டுச் சாணம்", "கம்போஸ்ட்", "வேம்பு புண்ணாக்கு"],
+    profitRange: "₹25,000 - ₹40,000/ஏக்கர்",
+    risk: "குறைந்தது",
+    duration: "60-75 நாட்கள்",
+    waterReq: "குறைந்தது",
+    marketDemand: "நல்லது"
+  },
+  {
+    name: "கரும்பு",
+    english: "Sugarcane",
+    icon: "🎋",
+    seasons: ["Perennial"],
+    sowingMonths: [0, 1, 5, 6], // Jan-Feb, June-July
+    harvestMonths: [0, 1, 5, 6], // Jan-Feb, June-July (next year)
+    idealTemp: { min: 20, max: 35 },
+    idealMoisture: { min: 70, max: 85 },
+    naturalFertilizers: ["பஞ்சகவ்யம்", "மாட்டுச் சாணம்", "சிட்டுக்குருவி கழிவு", "நீர்வாழ் பாசி"],
+    profitRange: "₹80,000 - ₹1,20,000/ஏக்கர்",
+    risk: "அதிகம்",
+    duration: "12-18 மாதங்கள்",
+    waterReq: "அதிகம்",
+    marketDemand: "நிலையானது"
+  },
+  {
+    name: "வாழை",
+    english: "Banana",
+    icon: "🍌",
+    seasons: ["Perennial"],
+    sowingMonths: [5, 6, 7, 8], // June-September
+    harvestMonths: [5, 6, 7, 8], // June-September (next year)
+    idealTemp: { min: 15, max: 35 },
+    idealMoisture: { min: 60, max: 80 },
+    naturalFertilizers: ["மாட்டுச் சாணம்", "கோழிக் கழிவு", "மீன் உரம்", "பச்சைத் தழை உரம்"],
+    profitRange: "₹1,00,000 - ₹1,50,000/ஏக்கர்",
+    risk: "மிதமானது",
+    duration: "12-14 மாதங்கள்",
+    waterReq: "அதிகம்",
+    marketDemand: "உயர்ந்தது"
+  },
+  {
+    name: "மிளகாய்",
+    english: "Chilli",
+    icon: "🌶️",
+    seasons: ["Samba", "Rabi"],
+    sowingMonths: [7, 8, 9, 10], // August-November
+    harvestMonths: [0, 1, 2, 3], // January-April
+    idealTemp: { min: 20, max: 30 },
+    idealMoisture: { min: 50, max: 70 },
+    naturalFertilizers: ["மீன் உரம்", "கொட்டைப் பிண்ணாக்கு", "மாட்டுச் சாணம்", "வேம்பு புண்ணாக்கு"],
+    profitRange: "₹60,000 - ₹90,000/ஏக்கர்",
+    risk: "அதிகம்",
+    duration: "120-150 நாட்கள்",
+    waterReq: "மிதமானது",
+    marketDemand: "உயர்ந்தது"
+  },
+  {
+    name: "வெங்காயம்",
+    english: "Onion",
+    icon: "🧅",
+    seasons: ["Rabi"],
+    sowingMonths: [9, 10], // October-November
+    harvestMonths: [1, 2, 3], // February-April
+    idealTemp: { min: 15, max: 25 },
+    idealMoisture: { min: 50, max: 70 },
+    naturalFertilizers: ["கம்போஸ்ட்", "மாட்டுச் சாணம்", "கொட்டைப் பிண்ணாக்கு", "வேம்பு புண்ணாக்கு"],
+    profitRange: "₹70,000 - ₹1,00,000/ஏக்கர்",
+    risk: "அதிகம்",
+    duration: "90-120 நாட்கள்",
+    waterReq: "மிதமானது",
+    marketDemand: "உயர்ந்தது"
+  },
+  {
+    name: "தக்காளி",
+    english: "Tomato",
+    icon: "🍅",
+    seasons: ["All seasons"],
+    sowingMonths: [6, 7, 9, 10], // July-August, October-November
+    harvestMonths: [9, 10, 0, 1], // November-December, February-March
+    idealTemp: { min: 15, max: 27 },
+    idealMoisture: { min: 60, max: 80 },
+    naturalFertilizers: ["பச்சைத் தழை உரம்", "மீன் உரம்", "கோழிக் கழிவு", "மாட்டுச் சாணம்"],
+    profitRange: "₹80,000 - ₹1,20,000/ஏக்கர்",
+    risk: "அதிகம்",
+    duration: "90-100 நாட்கள்",
+    waterReq: "அதிகம்",
+    marketDemand: "உயர்ந்தது"
+  }
+];
+
+// Natural fertilizers database
+const fertilizerDatabase = {
+  "பஞ்சகவ்யம்": {
+    description: "5 வகை பசுவின் பொருட்கள் (பால், தயிர், நெய், சாணநீர், சிறுநீர்)",
+    benefits: ["விரைவு வளர்ச்சி", "நோய் எதிர்ப்பு சக்தி", "மண்ணின் ஊட்டச்சத்து"],
+    preparation: "பால் 1லி, தயிர் 1லி, நெய் 500மி.லி, சாணநீர் 1லி, சிறுநீர் 1லி - கலந்து 5 நாட்கள் கிளறவும்",
+    application: "5-10% செறிவில் நீரில் கலந்து தெளிக்கவும்"
+  },
+  "மாட்டுச் சாணம்": {
+    description: "பசு மாட்டின் சாணத்திலிருந்து தயாரிக்கப்படும் கரிம உரம்",
+    benefits: ["மண்ணின் கட்டமைப்பு", "நுண்ணுயிர் செயல்பாடு", "மண் ஈரப்பதம் தக்கவைப்பு"],
+    preparation: "சாணத்தை 60-90 நாட்கள் அழுக வைத்து பக்குவப்படுத்தவும்",
+    application: "ஏக்கருக்கு 5-10 டன் வீதம் சேர்க்கவும்"
+  },
+  "ஜீவாமிருதம்": {
+    description: "இந்திய முறையில் தயாரிக்கப்படும் ப்ளாண்ட் கிராத் பிரோமோட்டர்",
+    benefits: ["வேர் வளர்ச்சி", "மண் வளம்", "நுண்ணுயிர் பெருக்கம்"],
+    preparation: "சாணநீர் 10லி, சர்க்கரை 1கிலோ, வெங்காயம்/வெள்ளைப்பூச்சி 1கிலோ - 7 நாட்கள் பக்குவம்",
+    application: "200லி நீரில் 1லி கலந்து தெளிக்கவும்"
+  },
+  "வேம்பு புண்ணாக்கு": {
+    description: "வேம்பு மரத்தின் விதைகளை அழுத்தி எடுக்கப்படும் எண்ணெய் பிண்ணாக்கு",
+    benefits: ["இலைப்பூச்சி கட்டுப்பாடு", "நைட்ரஜன் வழங்கல்", "மண் நோய் தடுப்பு"],
+    preparation: "பிண்ணாக்கை நீரில் ஊறவைத்து கலக்கவும்",
+    application: "ஏக்கருக்கு 100-200 கிலோ சேர்க்கவும்"
+  },
+  "மீன் உரம்": {
+    description: "மீன் கழிவுகளிலிருந்து தயாரிக்கப்படும் உயர் புரத உரம்",
+    benefits: ["விரைவு வளர்ச்சி", "பூக்குதல், காய்க்குதல்", "நைட்ரஜன், பாஸ்பரஸ்"],
+    preparation: "மீன் கழிவுகளை 2-3 வாரங்கள் அழுக வைக்கவும்",
+    application: "100லி நீரில் 5லி கலந்து தெளிக்கவும்"
+  }
+};
+
 /* ---------- Globals ---------- */
 let role = "";
 let adminChart = null;
 let seasonChart = null;
-let seasonalData = {};
-let previousSeasonData = {};
+let selectedCrop = null;
 
 /* ---------- Login ---------- */
 window.login = () => {
@@ -362,118 +616,219 @@ function showDashboard(){
   document.getElementById('adminView').style.display = (role === "admin") ? "block" : "none";
 }
 
-/* ---------- Month-based crop logic ---------- */
-function recommendCrop(d){
-  const m = new Date().getMonth() + 1;
-  const soilMoist = d?.soilMoist || 50;
-
-  if (m>=6 && m<=9 && soilMoist>55)
-    return { crop:"நெல் (Rice)", fert:"பஞ்சகவ்யா + மாட்டு சாணம்" };
-
-  if (m>=2 && m<=3 && soilMoist<45)
-    return { crop:"கடலை (Groundnut)", fert:"வேப்பம் புண்ணாக்கு" };
-
-  if (m>=4 && m<=5)
-    return { crop:"சோளம் (Maize)", fert:"ஜீவாமிர்தம்" };
-
-  return { crop:"காய்கறிகள்", fert:"கம்போஸ்ட் உரம்" };
-}
-
-/* ---------- View Switching ---------- */
-function switchView(viewType) {
-  const chartBtn = document.querySelector('.view-btn:nth-child(1)');
-  const tableBtn = document.querySelector('.view-btn:nth-child(2)');
-  const chartView = document.getElementById('chartView');
-  const tableView = document.getElementById('tableView');
+/* ---------- Get Next Month Recommendation ---------- */
+function getNextMonthRecommendation(currentMonth, fieldData) {
+  const nextMonth = (currentMonth + 1) % 12;
+  const nextMonthName = tamilMonthNames[nextMonth];
+  const englishNextMonth = englishMonthNames[nextMonth];
   
-  if (viewType === 'chart') {
-    chartBtn.classList.add('active');
-    tableBtn.classList.remove('active');
-    chartView.classList.add('active');
-    tableView.classList.remove('active');
-  } else {
-    tableBtn.classList.add('active');
-    chartBtn.classList.remove('active');
-    tableView.classList.add('active');
-    chartView.classList.remove('active');
-  }
-}
-
-/* ---------- Update Table ---------- */
-function updateSeasonTable(data) {
-  const tableBody = document.getElementById('seasonTableBody');
-  const avgYieldElement = document.getElementById('avgYield');
+  document.getElementById('nextMonthName').textContent = `${nextMonthName} (${englishNextMonth})`;
   
-  if (!data || Object.keys(data).length === 0) {
-    tableBody.innerHTML = `
-      <tr>
-        <td colspan="5" style="text-align:center;color:#94a3b8;">
-          ❌ பருவ தரவு கிடைக்கவில்லை
-        </td>
-      </tr>
-    `;
-    avgYieldElement.textContent = '--';
-    return;
+  // Filter crops suitable for next month
+  const suitableCrops = cropDatabase.filter(crop => 
+    crop.sowingMonths.includes(nextMonth) || 
+    crop.sowingMonths.includes((nextMonth + 1) % 12) ||
+    crop.seasons.includes("All seasons")
+  );
+  
+  if (suitableCrops.length === 0) {
+    return {
+      crop: "பரிந்துரைக்கப்படும் பயிர் இல்லை",
+      profit: "கிடைக்கவில்லை",
+      risk: "அதிகம்",
+      alternatives: []
+    };
   }
   
-  const seasons = Object.keys(data);
-  const yields = Object.values(data);
-  const totalYield = yields.reduce((sum, yieldVal) => sum + yieldVal, 0);
-  const averageYield = Math.round(totalYield / yields.length);
-  
-  // Update average yield
-  avgYieldElement.textContent = averageYield;
-  
-  // Generate table rows
-  let tableHTML = '';
-  seasons.forEach((season, index) => {
-    const yieldValue = yields[index];
-    const previousValue = previousSeasonData[season] || yieldValue;
-    const change = yieldValue - previousValue;
-    
-    // Determine status and color
-    let status = '';
-    let trendClass = '';
-    
-    if (yieldValue >= 80) {
-      status = 'சிறந்தது';
-      trendClass = 'trend-up';
-    } else if (yieldValue >= 60) {
-      status = 'நல்லது';
-      trendClass = 'trend-up';
-    } else if (yieldValue >= 40) {
-      status = 'நடுத்தரம்';
-      trendClass = 'trend-neutral';
-    } else {
-      status = 'மோசமானது';
-      trendClass = 'trend-down';
-    }
-    
-    // Change indicator
-    let changeIndicator = '';
-    if (change > 0) {
-      changeIndicator = `<span class="trend-up"><i class="bi bi-arrow-up"></i> ${change}%</span>`;
-    } else if (change < 0) {
-      changeIndicator = `<span class="trend-down"><i class="bi bi-arrow-down"></i> ${Math.abs(change)}%</span>`;
-    } else {
-      changeIndicator = `<span class="trend-neutral"><i class="bi bi-dash"></i> 0%</span>`;
-    }
-    
-    tableHTML += `
-      <tr>
-        <td><b>${season}</b></td>
-        <td><span style="font-size:18px;font-weight:bold;">${yieldValue}%</span></td>
-        <td>${previousValue}%</td>
-        <td>${changeIndicator}</td>
-        <td><span class="${trendClass}">${status}</span></td>
-      </tr>
-    `;
+  // Sort by profit potential (simple heuristic)
+  suitableCrops.sort((a, b) => {
+    const profitA = parseInt(a.profitRange.split('-')[0].replace(/[^0-9]/g, ''));
+    const profitB = parseInt(b.profitRange.split('-')[0].replace(/[^0-9]/g, ''));
+    return profitB - profitA;
   });
   
-  tableBody.innerHTML = tableHTML;
+  // Get top 3 crops for alternatives
+  const topCrops = suitableCrops.slice(0, 3);
+  const alternatives = suitableCrops.slice(1, 6); // Exclude top one
   
-  // Store current data as previous for next update
-  previousSeasonData = { ...data };
+  // Select best crop based on field conditions
+  let bestCrop = topCrops[0];
+  
+  if (fieldData) {
+    // Adjust based on actual field conditions
+    const soilMoist = fieldData.soilMoist || 50;
+    
+    for (const crop of topCrops) {
+      if (soilMoist >= crop.idealMoisture.min && soilMoist <= crop.idealMoisture.max) {
+        bestCrop = crop;
+        break;
+      }
+    }
+  }
+  
+  selectedCrop = bestCrop;
+  
+  return {
+    crop: bestCrop.name,
+    english: bestCrop.english,
+    profit: bestCrop.profitRange,
+    risk: bestCrop.risk,
+    alternatives: alternatives,
+    fertilizers: bestCrop.naturalFertilizers
+  };
+}
+
+/* ---------- Update Crop Display ---------- */
+function updateCropDisplay(recommendation) {
+  document.getElementById('recommendedCrop').innerHTML = 
+    `<span style="color:#38bdf8;font-size:18px;">${recommendation.crop}</span> (${recommendation.english})`;
+  
+  document.getElementById('expectedProfit').textContent = recommendation.profit;
+  document.getElementById('riskFactors').textContent = recommendation.risk;
+  
+  // Update natural fertilizers
+  const fertilizerElement = document.getElementById('naturalFertilizers');
+  if (recommendation.fertilizers && recommendation.fertilizers.length > 0) {
+    let fertilizerHTML = '<div style="font-size:14px;">';
+    recommendation.fertilizers.forEach(fert => {
+      const fertInfo = fertilizerDatabase[fert];
+      if (fertInfo) {
+        fertilizerHTML += `
+          <div style="margin-bottom:10px;padding:8px;background:#0f172a;border-radius:6px;">
+            <b style="color:#facc15;">${fert}:</b>
+            <div style="font-size:12px;color:#94a3b8;">${fertInfo.description}</div>
+          </div>
+        `;
+      } else {
+        fertilizerHTML += `<div style="margin-bottom:5px;">✓ ${fert}</div>`;
+      }
+    });
+    fertilizerHTML += '</div>';
+    fertilizerElement.innerHTML = fertilizerHTML;
+  }
+  
+  // Update alternative crops
+  const alternativeElement = document.getElementById('alternativeCrops');
+  if (recommendation.alternatives && recommendation.alternatives.length > 0) {
+    let alternativeHTML = '';
+    recommendation.alternatives.forEach((crop, index) => {
+      alternativeHTML += `
+        <div class="crop-item" onclick="showCropDetails('${crop.name}')" title="${crop.english}">
+          <div class="crop-icon">${crop.icon}</div>
+          <div style="font-size:13px;">${crop.name}</div>
+          <div style="font-size:11px;color:#94a3b8;">${crop.english}</div>
+        </div>
+      `;
+    });
+    alternativeElement.innerHTML = alternativeHTML;
+  }
+  
+  // Update crop details
+  if (selectedCrop) {
+    updateCropDetails(selectedCrop);
+  }
+}
+
+/* ---------- Show Crop Details ---------- */
+function showCropDetails(cropName) {
+  const crop = cropDatabase.find(c => c.name === cropName);
+  if (!crop) return;
+  
+  selectedCrop = crop;
+  updateCropDetails(crop);
+  
+  // Show modal with detailed info
+  document.getElementById('modalCropName').textContent = `${crop.icon} ${crop.name}`;
+  
+  let detailsHTML = `
+    <div style="margin-bottom:15px;">
+      <div style="color:#94a3b8;margin-bottom:5px;">English: <b style="color:#e5e7eb;">${crop.english}</b></div>
+      <div style="color:#94a3b8;margin-bottom:5px;">பருவங்கள்: ${crop.seasons.map(s => `<span class="period-indicator ${s.toLowerCase()}">${s}</span>`).join(' ')}</div>
+    </div>
+    
+    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:15px;">
+      <div style="background:#1e293b;padding:10px;border-radius:6px;">
+        <div style="color:#94a3b8;font-size:12px;">இலட்சிய வெப்பநிலை</div>
+        <div style="color:#38bdf8;font-weight:bold;">${crop.idealTemp.min}°C - ${crop.idealTemp.max}°C</div>
+      </div>
+      <div style="background:#1e293b;padding:10px;border-radius:6px;">
+        <div style="color:#94a3b8;font-size:12px;">மண் ஈரப்பதம்</div>
+        <div style="color:#38bdf8;font-weight:bold;">${crop.idealMoisture.min}% - ${crop.idealMoisture.max}%</div>
+      </div>
+      <div style="background:#1e293b;padding:10px;border-radius:6px;">
+        <div style="color:#94a3b8;font-size:12px;">நீர் தேவை</div>
+        <div style="color:#22c55e;font-weight:bold;">${crop.waterReq}</div>
+      </div>
+      <div style="background:#1e293b;padding:10px;border-radius:6px;">
+        <div style="color:#94a3b8;font-size:12px;">கால அளவு</div>
+        <div style="color:#facc15;font-weight:bold;">${crop.duration}</div>
+      </div>
+    </div>
+    
+    <div style="background:#1e293b;padding:15px;border-radius:6px;margin-bottom:15px;">
+      <div style="color:#facc15;font-weight:bold;margin-bottom:10px;">💰 எதிர்பார்க்கப்படும் லாபம்:</div>
+      <div style="font-size:20px;color:#22c55e;text-align:center;">${crop.profitRange}</div>
+    </div>
+    
+    <div style="background:#1e293b;padding:15px;border-radius:6px;">
+      <div style="color:#facc15;font-weight:bold;margin-bottom:10px;">🌿 பரிந்துரைக்கப்படும் இயற்கை உரங்கள்:</div>
+      <ul style="margin:0;padding-left:20px;">
+        ${crop.naturalFertilizers.map(fert => `<li style="margin-bottom:5px;">${fert}</li>`).join('')}
+      </ul>
+    </div>
+  `;
+  
+  document.getElementById('modalCropDetails').innerHTML = detailsHTML;
+  
+  // Show modal
+  document.getElementById('modalOverlay').style.display = 'block';
+  document.getElementById('cropDetailsModal').style.display = 'block';
+}
+
+function closeModal() {
+  document.getElementById('modalOverlay').style.display = 'none';
+  document.getElementById('cropDetailsModal').style.display = 'none';
+}
+
+/* ---------- Update Crop Details ---------- */
+function updateCropDetails(crop) {
+  const detailsElement = document.getElementById('cropDetails');
+  
+  let detailsHTML = `
+    <div style="display:flex;align-items:center;gap:15px;margin-bottom:15px;">
+      <div style="font-size:40px;">${crop.icon}</div>
+      <div>
+        <div style="font-size:18px;color:#38bdf8;font-weight:bold;">${crop.name}</div>
+        <div style="color:#94a3b8;font-size:14px;">${crop.english}</div>
+      </div>
+    </div>
+    
+    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:15px;">
+      <div>
+        <div style="color:#94a3b8;font-size:12px;">இலட்சிய வெப்பநிலை</div>
+        <div style="color:#e5e7eb;font-size:14px;">${crop.idealTemp.min}°C - ${crop.idealTemp.max}°C</div>
+      </div>
+      <div>
+        <div style="color:#94a3b8;font-size:12px;">மண் ஈரப்பதம்</div>
+        <div style="color:#e5e7eb;font-size:14px;">${crop.idealMoisture.min}% - ${crop.idealMoisture.max}%</div>
+      </div>
+      <div>
+        <div style="color:#94a3b8;font-size:12px;">நீர் தேவை</div>
+        <div style="color:#22c55e;font-size:14px;font-weight:bold;">${crop.waterReq}</div>
+      </div>
+      <div>
+        <div style="color:#94a3b8;font-size:12px;">கால அளவு</div>
+        <div style="color:#e5e7eb;font-size:14px;">${crop.duration}</div>
+      </div>
+    </div>
+    
+    <div style="background:#0f172a;padding:10px;border-radius:6px;margin-top:10px;">
+      <div style="color:#facc15;font-weight:bold;margin-bottom:5px;">⚠️ அபாய அளவு:</div>
+      <div style="color:#ef4444;font-size:16px;">${crop.risk}</div>
+    </div>
+  `;
+  
+  detailsElement.innerHTML = detailsHTML;
 }
 
 /* ---------- Firebase listeners ---------- */
@@ -510,6 +865,7 @@ function startFirebaseListeners() {
     let fieldData = allData.field1 || allData.Field1 || allData;
     
     if (fieldData) {
+      // Update live data display
       document.getElementById('liveData').innerHTML = `
         🌱 மண் ஈரப்பதம்: <b>${fieldData.soilMoist || 0}%</b><br>
         🌡 வெப்பநிலை: <b>${fieldData.soilTemp || 0}°C</b><br>
@@ -518,9 +874,12 @@ function startFirebaseListeners() {
         ⚡ மின்னல்: <b>${fieldData.lightning?.level || "-"}</b>
       `;
 
-      const rec = recommendCrop(fieldData);
-      document.getElementById('nextCrop').innerText = rec.crop;
-      document.getElementById('fertilizer').innerText = rec.fert;
+      // Get current month
+      const currentMonth = new Date().getMonth(); // 0-11
+      
+      // Get recommendation based on next month
+      const recommendation = getNextMonthRecommendation(currentMonth, fieldData);
+      updateCropDisplay(recommendation);
 
       if (role === "admin") {
         const adminChartEl = document.getElementById('adminChart').getContext('2d');
@@ -562,10 +921,7 @@ function startFirebaseListeners() {
     const seasonData = snap.val();
     console.log("Seasonal data:", seasonData);
     
-    seasonalData = seasonData || {};
-    
     if (seasonData) {
-      // Update the chart
       const seasonChartEl = document.getElementById('seasonChart').getContext('2d');
       if (seasonChart) seasonChart.destroy();
       seasonChart = new Chart(seasonChartEl, {
@@ -578,48 +934,19 @@ function startFirebaseListeners() {
             borderColor:"#38bdf8",
             backgroundColor:"rgba(56,189,248,0.1)",
             fill:true,
-            tension:0.4,
-            pointBackgroundColor:"#38bdf8",
-            pointBorderColor:"#ffffff",
-            pointBorderWidth:2,
-            pointRadius:6
+            tension:0.4
           }]
         },
         options:{
           responsive:true,
-          plugins: {
-            tooltip: {
-              callbacks: {
-                label: function(context) {
-                  return `விளைச்சல்: ${context.raw}%`;
-                }
-              }
-            }
-          },
           scales: {
             y: {
               beginAtZero: true,
-              max: 100,
-              title: {
-                display: true,
-                text: 'விளைச்சல் (%)'
-              }
-            },
-            x: {
-              title: {
-                display: true,
-                text: 'பருவம்'
-              }
+              max: 100
             }
           }
         }
       });
-      
-      // Update the table
-      updateSeasonTable(seasonData);
-    } else {
-      // If no data, show empty state
-      updateSeasonTable({});
     }
   });
 }
@@ -636,6 +963,9 @@ window.logout = () => {
   document.getElementById('loginPage').style.display = "flex";
   role = "";
 };
+
+// Close modal when clicking overlay
+document.getElementById('modalOverlay').addEventListener('click', closeModal);
 
 // Add test data function
 window.addTestData = function() {
