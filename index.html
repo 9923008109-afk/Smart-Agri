@@ -1,227 +1,157 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ta">
 <head>
 <meta charset="UTF-8">
-<title>Smart Agri Login System</title>
+<title>Smart Agri Dashboard</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 <style>
-  body {
-    margin: 0;
-    font-family: Arial, sans-serif;
-    background: #020617;
-    color: #e5e7eb;
-  }
-
-  .center {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-  }
-
-  .card {
-    background: #020617;
-    border-radius: 10px;
-    box-shadow: 0 0 15px rgba(56,189,248,0.4);
-    padding: 30px;
-    width: 320px;
-    text-align: center;
-  }
-
-  h2 {
-    color: #38bdf8;
-    margin-bottom: 15px;
-  }
-
-  input {
-    width: 100%;
-    padding: 10px;
-    margin: 8px 0;
-    border-radius: 5px;
-    border: none;
-  }
-
-  button {
-    width: 100%;
-    padding: 10px;
-    background: #38bdf8;
-    border: none;
-    border-radius: 5px;
-    font-weight: bold;
-    cursor: pointer;
-  }
-
-  button:hover {
-    background: #0ea5e9;
-  }
-
-  .dashboard {
-    display: none;
-  }
-
-  header {
-    background: #020617;
-    padding: 12px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 1px solid #1e293b;
-  }
-
-  .badge {
-    padding: 4px 10px;
-    border-radius: 20px;
-    font-size: 12px;
-    font-weight: bold;
-  }
-
-  .admin {
-    background: #22c55e;
-    color: black;
-  }
-
-  .user {
-    background: #facc15;
-    color: black;
-  }
-
-  .content {
-    padding: 20px;
-  }
-
-  .data-box {
-    background: #020617;
-    border: 1px solid #1e293b;
-    border-radius: 8px;
-    padding: 12px;
-    margin-bottom: 10px;
-  }
-
-  .logout {
-    background: #ef4444;
-    color: white;
-    padding: 6px 12px;
-    border-radius: 5px;
-    cursor: pointer;
-  }
-
-  .admin-only {
-    border-left: 4px solid #22c55e;
-  }
+body{margin:0;font-family:Arial;background:#020617;color:#e5e7eb}
+.center{display:flex;justify-content:center;align-items:center;height:100vh}
+.card{background:#020617;padding:25px;width:320px;border-radius:10px;
+box-shadow:0 0 15px rgba(56,189,248,.4);text-align:center}
+input,button{width:100%;padding:10px;margin:8px 0;border-radius:5px;border:none}
+button{background:#38bdf8;font-weight:bold}
+header{background:#020617;padding:12px;display:flex;justify-content:space-between;
+border-bottom:1px solid #1e293b}
+.badge{padding:4px 10px;border-radius:20px;font-size:12px;font-weight:bold}
+.admin{background:#22c55e;color:black}
+.user{background:#facc15;color:black}
+.box{border:1px solid #1e293b;border-radius:8px;padding:12px;margin-bottom:12px}
+.logout{background:#ef4444;padding:6px 12px;border-radius:5px;cursor:pointer}
+canvas{background:#fff;border-radius:8px;padding:10px}
 </style>
 </head>
 
 <body>
 
-<!-- ================= LOGIN ================= -->
+<!-- LOGIN -->
 <div class="center" id="loginPage">
   <div class="card">
     <h2>🔐 Smart Agri Login</h2>
-    <input type="text" id="username" placeholder="Username">
-    <input type="password" id="password" placeholder="Password">
+    <input id="username" placeholder="Username">
+    <input id="password" type="password" placeholder="Password">
     <button onclick="login()">Login</button>
     <p id="msg"></p>
   </div>
 </div>
 
-<!-- ================= DASHBOARD ================= -->
-<div class="dashboard" id="dashboard">
-  <header>
-    <div>
-      <strong>Smart Agriculture Dashboard</strong>
-      <span id="roleBadge" class="badge"></span>
-    </div>
-    <div class="logout" onclick="logout()">Logout</div>
-  </header>
+<!-- DASHBOARD -->
+<div id="dashboard" style="display:none">
+<header>
+  <div>Smart Agri Dashboard <span id="roleBadge" class="badge"></span></div>
+  <div class="logout" onclick="logout()">Logout</div>
+</header>
 
-  <div class="content">
+<div style="padding:15px">
 
-    <div class="data-box">
-      🌱 Soil Moisture: <strong>45%</strong>
-    </div>
+<!-- USER VIEW -->
+<div id="userView">
+  <div class="box">
+    <b>👉 அடுத்த மாதம் சிறந்த பயிர்</b><br>
+    🌾 நெல் (Rice)<br>
+    🌿 இயற்கை உரம்: பஞ்சகவ்யா + வேப்பம் சாறு
+  </div>
 
-    <div class="data-box">
-      🌡 Soil Temp: <strong>28°C</strong>
-    </div>
+  <div class="box" id="liveData"></div>
 
-    <div class="data-box">
-      ⚡ Lightning Level: <strong>HIGH</strong>
-    </div>
-
-    <div class="data-box">
-      ⚡ Intensity: <strong>7</strong>
-    </div>
-
-    <!-- ADMIN ONLY -->
-    <div class="data-box admin-only" id="adminPanel">
-      👑 Admin Control Panel<br>
-      • System Settings<br>
-      • Data Reset<br>
-      • Maintenance Mode
-    </div>
-
+  <div class="box">
+    <h4>📊 பருவ பயிர் விளைச்சல்</h4>
+    <canvas id="seasonChart"></canvas>
   </div>
 </div>
 
-<script>
-/* ================= USER DATABASE (FRONTEND ONLY) ================= */
-const users = {
-  admin: {
-    username: "admin",
-    password: "admin123",
-    role: "admin"
-  },
-  user: {
-    username: "user",
-    password: "user123",
-    role: "user"
-  }
+<!-- ADMIN VIEW -->
+<div id="adminView" style="display:none">
+  <div class="box">
+    <h4>👑 User-1 Field Data (Graph)</h4>
+    <canvas id="adminChart"></canvas>
+  </div>
+</div>
+
+</div>
+</div>
+
+<!-- FIREBASE -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
+import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-database.js";
+
+const firebaseConfig={
+ apiKey:"AIzaSyDoqjMw4D-7_GOs0rlFL8oYzInMU8dh2FU",
+ authDomain:"smart-agri-4d47c.firebaseapp.com",
+ databaseURL:"https://smart-agri-4d47c-default-rtdb.asia-southeast1.firebasedatabase.app",
+ projectId:"smart-agri-4d47c"
 };
 
-/* ================= LOGIN ================= */
-function login() {
-  const u = document.getElementById("username").value;
-  const p = document.getElementById("password").value;
-  const msg = document.getElementById("msg");
+const app=initializeApp(firebaseConfig);
+const db=getDatabase(app);
 
-  if (u === users.admin.username && p === users.admin.password) {
-    loadDashboard("admin");
-  }
-  else if (u === users.user.username && p === users.user.password) {
-    loadDashboard("user");
-  }
-  else {
-    msg.innerText = "❌ Invalid Login";
-    msg.style.color = "red";
-  }
+let role="";
+
+/* ===== LOGIN LOGIC ===== */
+window.login=()=>{
+ let u=username.value,p=password.value;
+ if(u==="admin" && p==="admin123"){ role="admin"; load(); }
+ else if(u==="user" && p==="user123"){ role="user"; load(); }
+ else{ msg.innerText="❌ தவறான Login"; msg.style.color="red"; }
+};
+
+function load(){
+ loginPage.style.display="none";
+ dashboard.style.display="block";
+ roleBadge.innerText=role.toUpperCase();
+ roleBadge.className="badge "+role;
+ adminView.style.display=(role==="admin")?"block":"none";
+ userView.style.display="block";
 }
 
-/* ================= DASHBOARD ================= */
-function loadDashboard(role) {
-  document.getElementById("loginPage").style.display = "none";
-  document.getElementById("dashboard").style.display = "block";
+/* ===== FIREBASE LIVE DATA ===== */
+onValue(ref(db,"agri/field1"),snap=>{
+ let d=snap.val();
+ if(!d) return;
 
-  const badge = document.getElementById("roleBadge");
-  const adminPanel = document.getElementById("adminPanel");
+ liveData.innerHTML=`
+ 🌱 மண் ஈரப்பதம்: <b>${d.soilMoist}%</b><br>
+ 🌡 வெப்பநிலை: <b>${d.soilTemp}°C</b><br>
+ 💧 ஈரப்பதம்: <b>${d.humidity}%</b><br>
+ ⚡ Lightning: <b>${d.lightning.level}</b><br>
+ 🧪 Nitrate: <b>${d.nitrate}</b>
+ `;
 
-  if (role === "admin") {
-    badge.innerText = "ADMIN";
-    badge.className = "badge admin";
-    adminPanel.style.display = "block";
-  } else {
-    badge.innerText = "USER";
-    badge.className = "badge user";
-    adminPanel.style.display = "none";
+ if(role==="admin"){
+  new Chart(adminChart,{
+   type:"line",
+   data:{
+    labels:["Soil","Temp","Humidity","Nitrate"],
+    datasets:[{
+     label:"User-1 Field Data",
+     data:[d.soilMoist,d.soilTemp,d.humidity,d.nitrate],
+     borderColor:"green"
+    }]
+   }
+  });
+ }
+});
+
+/* ===== SEASON CHART ===== */
+onValue(ref(db,"agri/seasonal"),snap=>{
+ let s=snap.val();
+ new Chart(seasonChart,{
+  type:"bar",
+  data:{
+   labels:Object.keys(s),
+   datasets:[{label:"Yield %",data:Object.values(s),backgroundColor:"#38bdf8"}]
   }
-}
+ });
+});
 
-/* ================= LOGOUT ================= */
-function logout() {
-  document.getElementById("dashboard").style.display = "none";
-  document.getElementById("loginPage").style.display = "flex";
-  document.getElementById("msg").innerText = "";
-}
+window.logout=()=>{
+ dashboard.style.display="none";
+ loginPage.style.display="flex";
+};
 </script>
 
 </body>
