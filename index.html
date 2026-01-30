@@ -5,8 +5,12 @@
 <title>Smart Agriculture Dashboard</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<!-- Chart.js (UMD – safest for GitHub Pages) -->
+<!-- Chart.js -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+<!-- Use compatible Firebase version -->
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
 
 <style>
 :root{
@@ -97,6 +101,7 @@ canvas{
   gap:10px;
   align-items:center;
 }
+.error{color:#f87171;font-size:14px;margin-top:10px;}
 </style>
 </head>
 
@@ -106,10 +111,11 @@ canvas{
 <div class="center" id="loginPage">
   <div class="login-card">
     <h2>🔐 Smart Agri Login</h2>
-    <input id="username" placeholder="Username">
-    <input id="password" type="password" placeholder="Password">
+    <input id="username" placeholder="Username" value="user">
+    <input id="password" type="password" placeholder="Password" value="user123">
     <button onclick="login()">Login</button>
     <p id="msg"></p>
+    <div id="firebaseStatus" class="error"></div>
   </div>
 </div>
 
@@ -121,6 +127,7 @@ canvas{
     <span id="roleBadge" class="badge"></span>
   </div>
   <div class="top-actions">
+    <span id="connectionStatus" style="color:#facc15;">● Connecting...</span>
     <span class="logout" onclick="logout()">Logout</span>
   </div>
 </header>
@@ -163,11 +170,8 @@ canvas{
 </div>
 
 <!-- FIREBASE + LOGIC -->
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
-import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-database.js";
-
-/* ---------- Firebase config ---------- */
+<script>
+// Firebase configuration (using your provided config)
 const firebaseConfig = {
   apiKey: "AIzaSyDoqjMw4D-7_GOs0rlFL8oYzInMU8dh2FU",
   authDomain: "smart-agri-4d47c.firebaseapp.com",
@@ -175,22 +179,48 @@ const firebaseConfig = {
   projectId: "smart-agri-4d47c"
 };
 
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
+// Initialize Firebase
+let app;
+let db;
+let isFirebaseInitialized = false;
+
+try {
+  app = firebase.initializeApp(firebaseConfig);
+  db = firebase.database();
+  isFirebaseInitialized = true;
+  document.getElementById('firebaseStatus').innerHTML = "✓ Firebase connected";
+  document.getElementById('firebaseStatus').style.color = "#22c55e";
+} catch (error) {
+  console.error("Firebase initialization error:", error);
+  document.getElementById('firebaseStatus').innerHTML = "✗ Firebase error: " + error.message;
+}
 
 /* ---------- Globals ---------- */
 let role = "";
 let adminChart = null;
 let seasonChart = null;
 
-/* ---------- Login (frontend only) ---------- */
+/* ---------- Login ---------- */
 window.login = () => {
-  if (username.value === "admin" && password.value === "admin123") {
+  const username = document.getElementById('username').value;
+  const password = document.getElementById('password').value;
+  const msg = document.getElementById('msg');
+  
+  if (!isFirebaseInitialized) {
+    msg.innerText = "❌ Firebase not initialized. Check console.";
+    msg.style.color = "red";
+    return;
+  }
+  
+  // Simple hardcoded login (for demo)
+  if (username === "admin" && password === "admin123") {
     role = "admin";
     showDashboard();
-  } else if (username.value === "user" && password.value === "user123") {
+    startFirebaseListeners();
+  } else if (username === "user" && password === "user123") {
     role = "user";
     showDashboard();
+    startFirebaseListeners();
   } else {
     msg.innerText = "❌ தவறான Login";
     msg.style.color = "red";
@@ -198,21 +228,22 @@ window.login = () => {
 };
 
 function showDashboard(){
-  loginPage.style.display = "none";
-  dashboard.style.display = "block";
-  roleBadge.innerText = role.toUpperCase();
-  roleBadge.className = "badge " + role;
-  adminView.style.display = (role === "admin") ? "block" : "none";
+  document.getElementById('loginPage').style.display = "none";
+  document.getElementById('dashboard').style.display = "block";
+  document.getElementById('roleBadge').innerText = role.toUpperCase();
+  document.getElementById('roleBadge').className = "badge " + role;
+  document.getElementById('adminView').style.display = (role === "admin") ? "block" : "none";
 }
 
 /* ---------- Month-based crop logic ---------- */
 function recommendCrop(d){
   const m = new Date().getMonth() + 1;
+  const soilMoist = d?.soilMoist || 50;
 
-  if (m>=6 && m<=9 && d.soilMoist>55)
+  if (m>=6 && m<=9 && soilMoist>55)
     return { crop:"நெல் (Rice)", fert:"பஞ்சகவ்யா + மாட்டு சாணம்" };
 
-  if (m>=2 && m<=3 && d.soilMoist<45)
+  if (m>=2 && m<=3 && soilMoist<45)
     return { crop:"கடலை (Groundnut)", fert:"வேப்பம் புண்ணாக்கு" };
 
   if (m>=4 && m<=5)
@@ -222,72 +253,159 @@ function recommendCrop(d){
 }
 
 /* ---------- Firebase listeners ---------- */
-window.addEventListener("DOMContentLoaded", () => {
+function startFirebaseListeners() {
+  if (!isFirebaseInitialized) {
+    console.error("Firebase not initialized");
+    return;
+  }
 
-  /* Field live data */
-  onValue(ref(db,"agri/field1"), snap => {
-    const d = snap.val();
-    if (!d) {
-      liveData.innerText = "❌ Firebase data not found";
+  // Update connection status
+  const connectedRef = firebase.database().ref(".info/connected");
+  connectedRef.on("value", function(snap) {
+    const statusEl = document.getElementById('connectionStatus');
+    if (snap.val() === true) {
+      statusEl.innerHTML = "● Connected";
+      statusEl.style.color = "#22c55e";
+    } else {
+      statusEl.innerHTML = "● Disconnected";
+      statusEl.style.color = "#ef4444";
+    }
+  });
+
+  /* Field live data - Test with a simpler path first */
+  const fieldRef = firebase.database().ref("agri");
+  fieldRef.on("value", function(snap) {
+    console.log("Firebase data received:", snap.val());
+    
+    const allData = snap.val();
+    if (!allData) {
+      document.getElementById('liveData').innerHTML = "❌ No data in Firebase. Please add data to 'agri/field1'";
       return;
     }
+    
+    // Check different possible data structures
+    let fieldData = allData.field1 || allData.Field1 || allData;
+    
+    if (fieldData) {
+      document.getElementById('liveData').innerHTML = `
+        🌱 மண் ஈரப்பதம்: <b>${fieldData.soilMoist || 0}%</b><br>
+        🌡 வெப்பநிலை: <b>${fieldData.soilTemp || 0}°C</b><br>
+        💧 ஈரப்பதம்: <b>${fieldData.humidity || 0}%</b><br>
+        🧪 நைட்ரேட்: <b>${fieldData.nitrate || 0}</b><br>
+        ⚡ மின்னல்: <b>${fieldData.lightning?.level || "-"}</b>
+      `;
 
-    liveData.innerHTML = `
-      🌱 மண் ஈரப்பதம்: <b>${d.soilMoist}%</b><br>
-      🌡 வெப்பநிலை: <b>${d.soilTemp}°C</b><br>
-      💧 ஈரப்பதம்: <b>${d.humidity}%</b><br>
-      🧪 நைட்ரேட்: <b>${d.nitrate}</b><br>
-      ⚡ மின்னல்: <b>${d.lightning?.level ?? "-"}</b>
-    `;
+      const rec = recommendCrop(fieldData);
+      document.getElementById('nextCrop').innerText = rec.crop;
+      document.getElementById('fertilizer').innerText = rec.fert;
 
-    const rec = recommendCrop(d);
-    nextCrop.innerText = rec.crop;
-    fertilizer.innerText = rec.fert;
+      if (role === "admin") {
+        const adminChartEl = document.getElementById('adminChart').getContext('2d');
+        if (adminChart) adminChart.destroy();
+        adminChart = new Chart(adminChartEl, {
+          type:"bar",
+          data:{
+            labels:["Soil Moisture","Temperature","Humidity","Nitrate"],
+            datasets:[{
+              label:"User-1 Field Data",
+              data:[
+                fieldData.soilMoist || 0,
+                fieldData.soilTemp || 0,
+                fieldData.humidity || 0,
+                fieldData.nitrate || 0
+              ],
+              backgroundColor:"#22c55e"
+            }]
+          },
+          options:{
+            responsive:true,
+            scales: {
+              y: {
+                beginAtZero: true
+              }
+            }
+          }
+        });
+      }
+    }
+  }, function(error) {
+    console.error("Firebase read failed:", error);
+    document.getElementById('liveData').innerHTML = `❌ Error: ${error.message}`;
+  });
 
-    if (role === "admin") {
-      if (adminChart) adminChart.destroy();
-      adminChart = new Chart(adminChartEl, {
-        type:"bar",
+  /* Seasonal chart data */
+  const seasonRef = firebase.database().ref("agri/seasonal");
+  seasonRef.on("value", function(snap) {
+    const seasonData = snap.val();
+    console.log("Seasonal data:", seasonData);
+    
+    if (seasonData) {
+      const seasonChartEl = document.getElementById('seasonChart').getContext('2d');
+      if (seasonChart) seasonChart.destroy();
+      seasonChart = new Chart(seasonChartEl, {
+        type:"line",
         data:{
-          labels:["Soil","Temp","Humidity","Nitrate"],
+          labels:Object.keys(seasonData),
           datasets:[{
-            label:"User-1 Field Data",
-            data:[d.soilMoist,d.soilTemp,d.humidity,d.nitrate],
-            backgroundColor:"#22c55e"
+            label:"Seasonal Yield %",
+            data:Object.values(seasonData),
+            borderColor:"#38bdf8",
+            backgroundColor:"rgba(56,189,248,0.1)",
+            fill:true,
+            tension:0.4
           }]
         },
-        options:{responsive:true}
+        options:{
+          responsive:true,
+          scales: {
+            y: {
+              beginAtZero: true,
+              max: 100
+            }
+          }
+        }
       });
     }
   });
-
-  /* Seasonal chart */
-  onValue(ref(db,"agri/seasonal"), snap => {
-    const s = snap.val();
-    if (!s) return;
-
-    if (seasonChart) seasonChart.destroy();
-    seasonChart = new Chart(seasonChartEl, {
-      type:"line",
-      data:{
-        labels:Object.keys(s),
-        datasets:[{
-          label:"Seasonal Yield %",
-          data:Object.values(s),
-          borderColor:"#38bdf8",
-          fill:false
-        }]
-      },
-      options:{responsive:true}
-    });
-  });
-
-});
+}
 
 /* ---------- Logout ---------- */
 window.logout = () => {
-  dashboard.style.display = "none";
-  loginPage.style.display = "flex";
+  // Clean up Firebase listeners
+  if (isFirebaseInitialized) {
+    firebase.database().ref("agri").off();
+    firebase.database().ref("agri/seasonal").off();
+    firebase.database().ref(".info/connected").off();
+  }
+  
+  document.getElementById('dashboard').style.display = "none";
+  document.getElementById('loginPage').style.display = "flex";
+  role = "";
+};
+
+// Add test data function (for debugging)
+window.addTestData = function() {
+  if (!isFirebaseInitialized) return;
+  
+  const testData = {
+    soilMoist: 65,
+    soilTemp: 28,
+    humidity: 75,
+    nitrate: 45,
+    lightning: { level: "Low" }
+  };
+  
+  const seasonalData = {
+    "Summer": 85,
+    "Monsoon": 95,
+    "Winter": 65,
+    "Spring": 75
+  };
+  
+  firebase.database().ref("agri/field1").set(testData);
+  firebase.database().ref("agri/seasonal").set(seasonalData);
+  
+  alert("Test data added to Firebase!");
 };
 </script>
 
