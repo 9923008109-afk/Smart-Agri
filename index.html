@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Smart Agriculture & Lightning Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #0f172a;
+      color: #e5e7eb;
+      padding: 20px;
+    }
+
+    h2 {
+      text-align: center;
+      color: #38bdf8;
+    }
+
+    .card {
+      background: #020617;
+      border-radius: 10px;
+      padding: 15px;
+      margin: 10px auto;
+      max-width: 420px;
+      box-shadow: 0 0 10px rgba(56,189,248,0.3);
+    }
+
+    .row {
+      display: flex;
+      justify-content: space-between;
+      margin: 6px 0;
+      font-size: 16px;
+    }
+
+    .label {
+      color: #93c5fd;
+    }
+
+    .value {
+      font-weight: bold;
+      color: #facc15;
+    }
+
+    footer {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 13px;
+      color: #9ca3af;
+    }
+  </style>
+</head>
+<body>
+
+<h2>🌱 Smart Agriculture & ⚡ Lightning Monitor</h2>
+
+<div class="card">
+  <div class="row"><span class="label">Soil Moisture</span><span class="value" id="soilMoist">--</span></div>
+  <div class="row"><span class="label">Soil Temperature</span><span class="value" id="soilTemp">--</span></div>
+  <div class="row"><span class="label">Nitrate Level</span><span class="value" id="nitrate">--</span></div>
+</div>
+
+<div class="card">
+  <div class="row"><span class="label">Air Temperature</span><span class="value" id="airTemp">--</span></div>
+  <div class="row"><span class="label">Humidity</span><span class="value" id="humidity">--</span></div>
+</div>
+
+<div class="card">
+  <div class="row"><span class="label">Light Intensity</span><span class="value" id="light">--</span></div>
+  <div class="row"><span class="label">Wind Level</span><span class="value" id="wind">--</span></div>
+</div>
+
+<div class="card">
+  <div class="row"><span class="label">⚡ Lightning Level</span><span class="value" id="lLevel">--</span></div>
+  <div class="row"><span class="label">Lightning Intensity</span><span class="value" id="lIntensity">--</span></div>
+  <div class="row"><span class="label">Total Lightning</span><span class="value" id="lTotal">--</span></div>
+</div>
+
+<footer>
+  ESP32 Firebase Realtime Monitoring
+</footer>
+
+<!-- ================= FIREBASE SCRIPT ================= -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
+  import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-database.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyDoqjMw4D-7_GOs0rlFL8oYzInMU8dh2FU",
+    authDomain: "smart-agri-4d47c.firebaseapp.com",
+    databaseURL: "https://smart-agri-4d47c-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "smart-agri-4d47c",
+    storageBucket: "smart-agri-4d47c.firebasestorage.app",
+    messagingSenderId: "588375675787",
+    appId: "1:588375675787:web:f5753cde90fc77fa83d58e"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+
+  const agriRef = ref(db, "agri");
+
+  onValue(agriRef, (snapshot) => {
+    const d = snapshot.val();
+    if (!d) return;
+
+    document.getElementById("soilMoist").innerText = d.soilMoist + " %";
+    document.getElementById("soilTemp").innerText = d.soilTemp + " °C";
+    document.getElementById("nitrate").innerText = d.nitrate.toFixed(1);
+
+    document.getElementById("airTemp").innerText = d.airTemp + " °C";
+    document.getElementById("humidity").innerText = d.humidity + " %";
+
+    document.getElementById("light").innerText = d.light + " %";
+    document.getElementById("wind").innerText = d.wind + " %";
+
+    document.getElementById("lLevel").innerText = d.lightning.level;
+    document.getElementById("lIntensity").innerText = d.lightning.intensity;
+    document.getElementById("lTotal").innerText = d.lightning.total;
+  });
+</script>
+
+</body>
+</html>
