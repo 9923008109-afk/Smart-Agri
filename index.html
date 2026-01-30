@@ -5,11 +5,8 @@
 <title>Smart Agriculture Dashboard</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<!-- Chart.js -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-<!-- jsPDF -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<!-- Chart.js (UMD – safest for GitHub Pages) -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 
 <style>
 :root{
@@ -21,10 +18,15 @@
 body{
   margin:0;
   font-family:Segoe UI,Arial;
-  background:linear-gradient(135deg,#020617,#020617);
+  background:#020617;
   color:#e5e7eb;
 }
-.center{display:flex;justify-content:center;align-items:center;height:100vh}
+.center{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  height:100vh;
+}
 .login-card{
   background:var(--card);
   padding:30px;
@@ -34,20 +36,37 @@ body{
 }
 .login-card h2{text-align:center;color:var(--accent)}
 input,button{
-  width:100%;padding:10px;margin:8px 0;border-radius:6px;border:none;
+  width:100%;
+  padding:10px;
+  margin:8px 0;
+  border-radius:6px;
+  border:none;
 }
-button{background:var(--accent);font-weight:bold;cursor:pointer}
+button{
+  background:var(--accent);
+  font-weight:bold;
+  cursor:pointer;
+}
 header{
   padding:14px 18px;
-  display:flex;justify-content:space-between;align-items:center;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
   border-bottom:1px solid var(--border);
 }
 .badge{
-  padding:4px 10px;border-radius:20px;font-size:12px;font-weight:bold;
+  padding:4px 10px;
+  border-radius:20px;
+  font-size:12px;
+  font-weight:bold;
 }
 .admin{background:#22c55e;color:black}
 .user{background:#facc15;color:black}
-.container{padding:18px;max-width:1200px;margin:auto}
+.container{
+  padding:18px;
+  max-width:1200px;
+  margin:auto;
+}
 .grid{
   display:grid;
   grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
@@ -61,16 +80,29 @@ header{
 }
 .card h3{margin-top:0;color:#93c5fd}
 .logout{
-  background:#ef4444;padding:6px 14px;border-radius:6px;cursor:pointer;
+  background:#ef4444;
+  padding:6px 14px;
+  border-radius:6px;
+  cursor:pointer;
 }
-canvas{background:#fff;border-radius:8px;padding:10px}
-.top-actions{display:flex;gap:10px;align-items:center}
+canvas{
+  background:#fff;
+  border-radius:8px;
+  padding:10px;
+  width:100%;
+  height:280px;
+}
+.top-actions{
+  display:flex;
+  gap:10px;
+  align-items:center;
+}
 </style>
 </head>
 
 <body>
 
-<!-- ================= LOGIN ================= -->
+<!-- LOGIN -->
 <div class="center" id="loginPage">
   <div class="login-card">
     <h2>🔐 Smart Agri Login</h2>
@@ -81,7 +113,7 @@ canvas{background:#fff;border-radius:8px;padding:10px}
   </div>
 </div>
 
-<!-- ================= DASHBOARD ================= -->
+<!-- DASHBOARD -->
 <div id="dashboard" style="display:none">
 <header>
   <div>
@@ -89,7 +121,6 @@ canvas{background:#fff;border-radius:8px;padding:10px}
     <span id="roleBadge" class="badge"></span>
   </div>
   <div class="top-actions">
-    <button onclick="downloadPDF()">📄 PDF Report</button>
     <span class="logout" onclick="logout()">Logout</span>
   </div>
 </header>
@@ -109,7 +140,7 @@ canvas{background:#fff;border-radius:8px;padding:10px}
 
     <div class="card">
       <h3>🌱 நில தகவல் (LIVE)</h3>
-      <div id="liveData">Loading...</div>
+      <div id="liveData">Waiting for data…</div>
     </div>
 
     <div class="card">
@@ -131,80 +162,75 @@ canvas{background:#fff;border-radius:8px;padding:10px}
 </div>
 </div>
 
-<!-- ================= LOGIC + FIREBASE ================= -->
+<!-- FIREBASE + LOGIC -->
 <script type="module">
-/* ===== Firebase imports ===== */
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
 import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-database.js";
 
-/* ===== Firebase config ===== */
+/* ---------- Firebase config ---------- */
 const firebaseConfig = {
   apiKey: "AIzaSyDoqjMw4D-7_GOs0rlFL8oYzInMU8dh2FU",
   authDomain: "smart-agri-4d47c.firebaseapp.com",
   databaseURL: "https://smart-agri-4d47c-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "smart-agri-4d47c",
-  storageBucket: "smart-agri-4d47c.firebasestorage.app",
-  messagingSenderId: "588375675787",
-  appId: "1:588375675787:web:f5753cde90fc77fa83d58e"
+  projectId: "smart-agri-4d47c"
 };
 
-/* ===== Init ===== */
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-/* ===== Globals ===== */
+/* ---------- Globals ---------- */
 let role = "";
-let adminChartObj = null;
-let seasonChartObj = null;
-let lastData = null;
-let lastCrop = null;
+let adminChart = null;
+let seasonChart = null;
 
-/* ===== Login (frontend only) ===== */
+/* ---------- Login (frontend only) ---------- */
 window.login = () => {
   if (username.value === "admin" && password.value === "admin123") {
-    role = "admin"; loadDashboard();
+    role = "admin";
+    showDashboard();
   } else if (username.value === "user" && password.value === "user123") {
-    role = "user"; loadDashboard();
+    role = "user";
+    showDashboard();
   } else {
     msg.innerText = "❌ தவறான Login";
     msg.style.color = "red";
   }
 };
 
-function loadDashboard(){
+function showDashboard(){
   loginPage.style.display = "none";
   dashboard.style.display = "block";
   roleBadge.innerText = role.toUpperCase();
   roleBadge.className = "badge " + role;
   adminView.style.display = (role === "admin") ? "block" : "none";
-  startFirebaseListeners();
 }
 
-/* ===== Month-based crop logic ===== */
+/* ---------- Month-based crop logic ---------- */
 function recommendCrop(d){
   const m = new Date().getMonth() + 1;
 
-  if ((m >= 6 && m <= 9) && d.soilMoist > 55)
+  if (m>=6 && m<=9 && d.soilMoist>55)
     return { crop:"நெல் (Rice)", fert:"பஞ்சகவ்யா + மாட்டு சாணம்" };
 
-  if ((m >= 2 && m <= 3) && d.soilMoist < 45)
+  if (m>=2 && m<=3 && d.soilMoist<45)
     return { crop:"கடலை (Groundnut)", fert:"வேப்பம் புண்ணாக்கு" };
 
-  if (m >= 4 && m <= 5)
+  if (m>=4 && m<=5)
     return { crop:"சோளம் (Maize)", fert:"ஜீவாமிர்தம்" };
 
   return { crop:"காய்கறிகள்", fert:"கம்போஸ்ட் உரம்" };
 }
 
-/* ===== Firebase listeners ===== */
-function startFirebaseListeners(){
+/* ---------- Firebase listeners ---------- */
+window.addEventListener("DOMContentLoaded", () => {
 
-  // Field live data
-  onValue(ref(db, "agri/field1"), snap => {
+  /* Field live data */
+  onValue(ref(db,"agri/field1"), snap => {
     const d = snap.val();
-    if (!d) return;
-
-    lastData = d;
+    if (!d) {
+      liveData.innerText = "❌ Firebase data not found";
+      return;
+    }
 
     liveData.innerHTML = `
       🌱 மண் ஈரப்பதம்: <b>${d.soilMoist}%</b><br>
@@ -215,78 +241,50 @@ function startFirebaseListeners(){
     `;
 
     const rec = recommendCrop(d);
-    lastCrop = rec;
     nextCrop.innerText = rec.crop;
     fertilizer.innerText = rec.fert;
 
-    // Admin graph
     if (role === "admin") {
-      if (adminChartObj) adminChartObj.destroy();
-      adminChartObj = new Chart(adminChart, {
-        type: "bar",
-        data: {
-          labels: ["Soil", "Temp", "Humidity", "Nitrate"],
-          datasets: [{
-            label: "User-1 Field Data",
-            data: [d.soilMoist, d.soilTemp, d.humidity, d.nitrate],
-            backgroundColor: "#22c55e"
+      if (adminChart) adminChart.destroy();
+      adminChart = new Chart(adminChartEl, {
+        type:"bar",
+        data:{
+          labels:["Soil","Temp","Humidity","Nitrate"],
+          datasets:[{
+            label:"User-1 Field Data",
+            data:[d.soilMoist,d.soilTemp,d.humidity,d.nitrate],
+            backgroundColor:"#22c55e"
           }]
-        }
+        },
+        options:{responsive:true}
       });
     }
   });
 
-  // Seasonal chart
-  onValue(ref(db, "agri/seasonal"), snap => {
+  /* Seasonal chart */
+  onValue(ref(db,"agri/seasonal"), snap => {
     const s = snap.val();
     if (!s) return;
-    if (seasonChartObj) seasonChartObj.destroy();
-    seasonChartObj = new Chart(seasonChart, {
-      type: "line",
-      data: {
-        labels: Object.keys(s),
-        datasets: [{
-          label: "Yield %",
-          data: Object.values(s),
-          borderColor: "#38bdf8",
-          fill: false
+
+    if (seasonChart) seasonChart.destroy();
+    seasonChart = new Chart(seasonChartEl, {
+      type:"line",
+      data:{
+        labels:Object.keys(s),
+        datasets:[{
+          label:"Seasonal Yield %",
+          data:Object.values(s),
+          borderColor:"#38bdf8",
+          fill:false
         }]
-      }
+      },
+      options:{responsive:true}
     });
   });
-}
 
-/* ===== PDF ===== */
-window.downloadPDF = () => {
-  if (!lastData || !lastCrop) {
-    alert("Data not ready");
-    return;
-  }
-  const { jsPDF } = window.jspdf;
-  const pdf = new jsPDF();
-  let y = 15;
+});
 
-  pdf.setFontSize(16);
-  pdf.text("Smart Agriculture Report", 10, y); y += 10;
-
-  pdf.setFontSize(11);
-  pdf.text(`Date: ${new Date().toLocaleDateString()}`, 10, y); y += 10;
-
-  pdf.text("Field Data:", 10, y); y += 8;
-  pdf.text(`Soil Moisture: ${lastData.soilMoist}%`, 10, y); y+=7;
-  pdf.text(`Soil Temp: ${lastData.soilTemp} °C`, 10, y); y+=7;
-  pdf.text(`Humidity: ${lastData.humidity}%`, 10, y); y+=7;
-  pdf.text(`Nitrate: ${lastData.nitrate}`, 10, y); y+=7;
-  pdf.text(`Lightning: ${lastData.lightning?.level ?? "-"}`, 10, y); y+=10;
-
-  pdf.text("Next Month Recommendation:", 10, y); y+=8;
-  pdf.text(`Crop: ${lastCrop.crop}`, 10, y); y+=7;
-  pdf.text(`Natural Fertilizer: ${lastCrop.fert}`, 10, y);
-
-  pdf.save("Smart_Agri_Report.pdf");
-};
-
-/* ===== Logout ===== */
+/* ---------- Logout ---------- */
 window.logout = () => {
   dashboard.style.display = "none";
   loginPage.style.display = "flex";
