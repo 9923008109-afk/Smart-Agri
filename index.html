@@ -2,8 +2,13 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>All Users Data - Admin</title>
+  <title>Smart Agriculture Dashboard</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/12.8.0/firebase-database.js"></script>
+  
   <style>
     * {
       margin: 0;
@@ -12,110 +17,446 @@
     }
 
     body {
-      font-family: Arial, sans-serif;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       background: #0f172a;
       color: #e5e7eb;
       min-height: 100vh;
     }
 
-    .navbar {
-      background: #020617;
-      padding: 15px 20px;
+    /* ===== LOGIN PAGE STYLES ===== */
+    #loginPage {
       display: flex;
-      justify-content: space-between;
+      justify-content: center;
       align-items: center;
-      border-bottom: 1px solid rgba(56, 189, 248, 0.2);
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .login-container {
+      background: rgba(2, 6, 23, 0.95);
+      border-radius: 15px;
+      padding: 40px;
+      width: 100%;
+      max-width: 450px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      border: 1px solid rgba(56, 189, 248, 0.2);
     }
 
     .logo {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .logo h1 {
+      color: #38bdf8;
+      font-size: 28px;
+      margin-bottom: 10px;
+    }
+
+    .logo span {
+      font-size: 40px;
+      display: block;
+      margin-bottom: 10px;
+    }
+
+    .logo p {
+      color: #94a3b8;
+      font-size: 14px;
+    }
+
+    .tabs {
+      display: flex;
+      margin-bottom: 25px;
+      border-bottom: 1px solid #334155;
+    }
+
+    .tab-btn {
+      flex: 1;
+      padding: 12px;
+      background: none;
+      border: none;
+      color: #94a3b8;
+      font-size: 16px;
+      cursor: pointer;
+      transition: all 0.3s;
+      border-bottom: 3px solid transparent;
+    }
+
+    .tab-btn.active {
+      color: #38bdf8;
+      border-bottom-color: #38bdf8;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      color: #94a3b8;
+      font-size: 14px;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 12px;
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      color: white;
+      font-size: 16px;
+    }
+
+    input:focus, select:focus {
+      outline: none;
+      border-color: #38bdf8;
+    }
+
+    .submit-btn {
+      width: 100%;
+      padding: 14px;
+      background: #0ea5e9;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.3s;
+      margin-top: 10px;
+    }
+
+    .submit-btn:hover {
+      background: #0284c7;
+    }
+
+    .submit-btn:disabled {
+      background: #475569;
+      cursor: not-allowed;
+    }
+
+    .message {
+      padding: 10px;
+      border-radius: 8px;
+      margin-top: 15px;
+      font-size: 14px;
+      display: none;
+    }
+
+    .error {
+      background: rgba(239, 68, 68, 0.2);
+      color: #f87171;
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      display: block;
+    }
+
+    .success {
+      background: rgba(34, 197, 94, 0.2);
+      color: #4ade80;
+      border: 1px solid rgba(34, 197, 94, 0.3);
+      display: block;
+    }
+
+    /* ===== NAVBAR STYLES ===== */
+    .navbar {
+      background: linear-gradient(90deg, #020617, #1e293b);
+      padding: 15px 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid rgba(56, 189, 248, 0.3);
+      display: none;
+    }
+
+    .logo-small {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 12px;
       font-size: 20px;
       color: #38bdf8;
+      font-weight: bold;
     }
 
     .nav-links {
       display: flex;
       gap: 20px;
+      align-items: center;
     }
 
     .nav-link {
       color: #cbd5e1;
       text-decoration: none;
-      padding: 8px 16px;
-      border-radius: 6px;
-      transition: background 0.3s;
+      padding: 10px 20px;
+      border-radius: 8px;
+      transition: all 0.3s;
+      font-size: 15px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
     }
 
     .nav-link:hover {
       background: rgba(56, 189, 248, 0.1);
+      color: #38bdf8;
     }
 
     .nav-link.active {
       background: rgba(56, 189, 248, 0.2);
       color: #38bdf8;
+      box-shadow: 0 0 15px rgba(56, 189, 248, 0.2);
+    }
+
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .user-details {
+      text-align: right;
+    }
+
+    .user-name {
+      font-weight: bold;
+      color: #38bdf8;
+    }
+
+    .user-role {
+      font-size: 12px;
+      color: #94a3b8;
+      background: rgba(56, 189, 248, 0.1);
+      padding: 2px 8px;
+      border-radius: 10px;
     }
 
     .logout-btn {
-      padding: 8px 16px;
-      background: #dc2626;
+      padding: 10px 20px;
+      background: linear-gradient(135deg, #dc2626, #b91c1c);
       color: white;
       border: none;
-      border-radius: 6px;
+      border-radius: 8px;
       cursor: pointer;
       font-size: 14px;
+      font-weight: bold;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
 
-    .container {
+    /* ===== DASHBOARD STYLES ===== */
+    .dashboard {
       padding: 30px;
       max-width: 1400px;
       margin: 0 auto;
+      display: none;
     }
 
-    h1 {
-      color: #38bdf8;
-      margin-bottom: 20px;
-      text-align: center;
-    }
-
-    .subtitle {
-      text-align: center;
-      color: #94a3b8;
+    .dashboard-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
       margin-bottom: 30px;
+      flex-wrap: wrap;
+      gap: 20px;
     }
 
-    .users-grid {
+    .dashboard-header h1 {
+      color: #38bdf8;
+      font-size: 28px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 15px;
+    }
+
+    .action-btn {
+      padding: 12px 24px;
+      background: linear-gradient(135deg, #0ea5e9, #0284c7);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: bold;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.3s;
+    }
+
+    .action-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(14, 165, 233, 0.3);
+    }
+
+    .action-btn.secondary {
+      background: linear-gradient(135deg, #475569, #334155);
+    }
+
+    /* ===== USER DASHBOARD STYLES ===== */
+    .user-card {
+      background: #020617;
+      border-radius: 10px;
+      padding: 15px;
+      margin: 10px auto;
+      max-width: 420px;
+      box-shadow: 0 0 10px rgba(56,189,248,0.3);
+    }
+
+    .row {
+      display: flex;
+      justify-content: space-between;
+      margin: 6px 0;
+      font-size: 16px;
+    }
+
+    .label {
+      color: #93c5fd;
+    }
+
+    .value {
+      font-weight: bold;
+      color: #facc15;
+    }
+
+    footer {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 13px;
+      color: #9ca3af;
+    }
+
+    .user-welcome {
+      text-align: center;
+      margin-bottom: 20px;
+      color: #cbd5e1;
+    }
+
+    /* ===== ADMIN DASHBOARD STYLES ===== */
+    .stats-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
       gap: 20px;
       margin-bottom: 40px;
     }
 
-    .user-card {
-      background: #020617;
-      border-radius: 10px;
-      padding: 20px;
-      box-shadow: 0 0 10px rgba(56, 189, 248, 0.3);
+    .stat-card {
+      background: linear-gradient(135deg, #020617, #1e293b);
+      border-radius: 12px;
+      padding: 25px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
       border: 1px solid rgba(56, 189, 248, 0.1);
+      transition: all 0.3s;
     }
 
-    .user-header {
+    .stat-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 25px rgba(56, 189, 248, 0.2);
+      border-color: rgba(56, 189, 248, 0.3);
+    }
+
+    .stat-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
       margin-bottom: 15px;
-      padding-bottom: 10px;
-      border-bottom: 1px solid #334155;
     }
 
-    .user-name {
-      font-size: 18px;
+    .stat-title {
+      color: #93c5fd;
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    .stat-icon {
+      font-size: 24px;
       color: #38bdf8;
     }
 
+    .stat-value {
+      font-size: 32px;
+      font-weight: bold;
+      color: #facc15;
+      margin-bottom: 5px;
+    }
+
+    .stat-change {
+      font-size: 14px;
+      color: #94a3b8;
+    }
+
+    /* ===== USERS MANAGEMENT STYLES ===== */
+    .users-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+      gap: 20px;
+      margin-bottom: 40px;
+    }
+
+    .user-mgmt-card {
+      background: linear-gradient(135deg, #020617, #1e293b);
+      border-radius: 12px;
+      padding: 25px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(56, 189, 248, 0.1);
+      transition: all 0.3s;
+    }
+
+    .user-mgmt-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 25px rgba(56, 189, 248, 0.2);
+      border-color: rgba(56, 189, 248, 0.3);
+    }
+
+    .user-mgmt-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 20px;
+      padding-bottom: 15px;
+      border-bottom: 1px solid #334155;
+    }
+
+    .user-mgmt-info {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .user-avatar {
+      width: 50px;
+      height: 50px;
+      background: linear-gradient(135deg, #38bdf8, #0ea5e9);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      font-weight: bold;
+      color: white;
+    }
+
+    .user-mgmt-details h3 {
+      color: #38bdf8;
+      margin-bottom: 5px;
+      font-size: 18px;
+    }
+
+    .user-mgmt-details p {
+      color: #94a3b8;
+      font-size: 14px;
+    }
+
     .user-status {
-      padding: 4px 12px;
+      padding: 6px 15px;
       border-radius: 20px;
       font-size: 12px;
       font-weight: bold;
@@ -132,147 +473,1272 @@
     }
 
     .sensor-data {
-      display: grid;
-      gap: 8px;
+      margin-bottom: 20px;
     }
 
-    .data-row {
+    .sensor-row {
       display: flex;
       justify-content: space-between;
+      margin: 8px 0;
       font-size: 14px;
     }
 
-    .data-label {
-      color: #94a3b8;
+    .sensor-label {
+      color: #cbd5e1;
     }
 
-    .data-value {
+    .sensor-value {
       color: #facc15;
       font-weight: bold;
     }
 
-    .back-btn {
-      display: inline-block;
-      padding: 12px 24px;
-      background: #475569;
-      color: white;
-      text-decoration: none;
+    .user-mgmt-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+      border-top: 1px solid #334155;
+      padding-top: 20px;
+    }
+
+    .user-action-btn {
+      flex: 1;
+      padding: 10px;
+      border: none;
       border-radius: 8px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: bold;
+      transition: all 0.3s;
+      text-align: center;
+    }
+
+    .user-action-btn.edit {
+      background: rgba(59, 130, 246, 0.2);
+      color: #3b82f6;
+    }
+
+    .user-action-btn.view {
+      background: rgba(34, 197, 94, 0.2);
+      color: #4ade80;
+    }
+
+    .user-action-btn.delete {
+      background: rgba(239, 68, 68, 0.2);
+      color: #ef4444;
+    }
+
+    /* ===== ADD USER FORM STYLES ===== */
+    .form-card {
+      background: linear-gradient(135deg, #020617, #1e293b);
+      border-radius: 16px;
+      padding: 40px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+      border: 1px solid rgba(56, 189, 248, 0.2);
+      max-width: 800px;
+      margin: 0 auto;
+      display: none;
+    }
+
+    .form-group {
+      margin-bottom: 25px;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    .form-label {
+      display: block;
+      margin-bottom: 10px;
+      color: #93c5fd;
+      font-size: 15px;
+      font-weight: 600;
+    }
+
+    .form-label span {
+      color: #f87171;
+    }
+
+    .form-input, .form-select {
+      width: 100%;
+      padding: 14px;
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 10px;
+      color: white;
+      font-size: 16px;
+      transition: all 0.3s;
+    }
+
+    .form-actions {
+      display: flex;
+      gap: 20px;
+      margin-top: 40px;
+      padding-top: 30px;
+      border-top: 1px solid #334155;
+    }
+
+    .form-btn {
+      flex: 1;
+      padding: 16px;
+      border: none;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s;
+      text-align: center;
+    }
+
+    .form-btn.primary {
+      background: linear-gradient(135deg, #0ea5e9, #0284c7);
+      color: white;
+    }
+
+    .form-btn.secondary {
+      background: linear-gradient(135deg, #475569, #334155);
+      color: white;
+    }
+
+    .form-btn.delete {
+      background: linear-gradient(135deg, #dc2626, #b91c1c);
+      color: white;
+    }
+
+    /* ===== LOADING STYLES ===== */
+    .loading {
+      text-align: center;
+      padding: 40px;
+      color: #94a3b8;
+    }
+
+    .loading-spinner {
+      border: 3px solid rgba(56, 189, 248, 0.2);
+      border-top: 3px solid #38bdf8;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 15px;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    /* ===== UTILITY CLASSES ===== */
+    .hidden {
+      display: none !important;
+    }
+
+    .visible {
+      display: block !important;
+    }
+
+    .text-center {
+      text-align: center;
+    }
+
+    .mt-20 {
       margin-top: 20px;
     }
 
-    .back-btn:hover {
-      background: #334155;
+    .mb-20 {
+      margin-bottom: 20px;
     }
 
-    .last-update {
-      color: #64748b;
-      font-size: 12px;
-      margin-top: 10px;
+    /* ===== RESPONSIVE STYLES ===== */
+    @media (max-width: 768px) {
+      .form-row {
+        grid-template-columns: 1fr;
+      }
+      
+      .navbar {
+        flex-direction: column;
+        gap: 15px;
+        padding: 15px;
+      }
+      
+      .nav-links {
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+      
+      .dashboard-header {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      
+      .header-actions {
+        flex-direction: column;
+      }
+      
+      .users-grid {
+        grid-template-columns: 1fr;
+      }
     }
   </style>
 </head>
 <body>
-  <!-- Navigation -->
-  <nav class="navbar">
-    <div class="logo">
-      <span>🌱⚡</span>
-      <span>Admin Panel</span>
-    </div>
-    <div class="nav-links">
-      <a href="admin-dashboard.html" class="nav-link">Dashboard</a>
-      <a href="admin-users.html" class="nav-link active">All Users</a>
-      <a href="user-dashboard.html" class="nav-link">Live View</a>
-    </div>
-    <button class="logout-btn" id="logoutBtn">Logout</button>
-  </nav>
-
-  <!-- Main Content -->
-  <div class="container">
-    <h1>All Users Monitoring Data</h1>
-    <p class="subtitle">View real-time data from all registered users</p>
-
-    <div id="usersData" class="users-grid">
-      <!-- User cards will be dynamically generated here -->
-      <div class="user-card">
-        <div class="user-header">
-          <span class="user-name">AFNITHA</span>
-          <span class="user-status status-active">Active</span>
-        </div>
-        <div class="sensor-data">
-          <div class="data-row">
-            <span class="data-label">Soil Moisture:</span>
-            <span class="data-value" id="user1_moist">-- %</span>
-          </div>
-          <div class="data-row">
-            <span class="data-label">Soil Temp:</span>
-            <span class="data-value" id="user1_temp">-- °C</span>
-          </div>
-          <div class="data-row">
-            <span class="data-label">Air Temp:</span>
-            <span class="data-value" id="user1_air">-- °C</span>
-          </div>
-          <div class="data-row">
-            <span class="data-label">Lightning:</span>
-            <span class="data-value" id="user1_lightning">--</span>
-          </div>
-        </div>
-        <div class="last-update">Last updated: <span id="user1_update">--</span></div>
+  <!-- ===== LOGIN PAGE ===== -->
+  <div id="loginPage">
+    <div class="login-container">
+      <div class="logo">
+        <span>🌱⚡</span>
+        <h1>Smart Agriculture</h1>
+        <p>Real-time Monitoring System</p>
       </div>
 
-      <!-- Add more user cards as needed -->
-      <!-- In a real system, these would be dynamically generated from a database -->
+      <div class="tabs">
+        <button class="tab-btn active" data-tab="login">Login</button>
+        <button class="tab-btn" data-tab="signup">Sign Up</button>
+      </div>
+
+      <!-- Login Form -->
+      <form id="loginForm" class="form-content" style="display: block;">
+        <div class="form-group">
+          <label for="loginEmail">Email</label>
+          <input type="email" id="loginEmail" placeholder="Enter your email" required>
+        </div>
+
+        <div class="form-group">
+          <label for="loginPassword">Password</label>
+          <input type="password" id="loginPassword" placeholder="Enter your password" required>
+        </div>
+
+        <button type="submit" class="submit-btn" id="loginBtn">Login</button>
+        <div id="loginMessage" class="message"></div>
+      </form>
+
+      <!-- Signup Form -->
+      <form id="signupForm" class="form-content" style="display: none;">
+        <div class="form-group">
+          <label for="signupName">Full Name</label>
+          <input type="text" id="signupName" placeholder="Enter your full name" required>
+        </div>
+
+        <div class="form-group">
+          <label for="signupEmail">Email</label>
+          <input type="email" id="signupEmail" placeholder="Enter your email" required>
+        </div>
+
+        <div class="form-group">
+          <label for="signupPassword">Password</label>
+          <input type="password" id="signupPassword" placeholder="Enter password (min. 6 characters)" required>
+        </div>
+
+        <div class="form-group">
+          <label for="signupConfirmPassword">Confirm Password</label>
+          <input type="password" id="signupConfirmPassword" placeholder="Confirm your password" required>
+        </div>
+
+        <div class="form-group">
+          <label for="signupRole">Role</label>
+          <select id="signupRole">
+            <option value="user">User</option>
+            <option value="admin">Admin</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="signupLocation">Location (Optional)</label>
+          <input type="text" id="signupLocation" placeholder="Farm location">
+        </div>
+
+        <button type="submit" class="submit-btn" id="signupBtn">Create Account</button>
+        <div id="signupMessage" class="message"></div>
+      </form>
+
+      <div class="text-center mt-20" style="color: #64748b; font-size: 13px;">
+        Default Admin: admin@agri.com / admin123
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== NAVBAR ===== -->
+  <nav class="navbar" id="navbar">
+    <div class="logo-small">
+      <span>🌱⚡</span>
+      <span id="navTitle">Smart Agriculture</span>
+    </div>
+    
+    <div class="nav-links" id="navLinks">
+      <!-- Links will be dynamically added -->
+    </div>
+    
+    <div class="user-info">
+      <div class="user-details">
+        <div class="user-name" id="navUserName">--</div>
+        <div class="user-role" id="navUserRole">User</div>
+      </div>
+      <button class="logout-btn" id="logoutBtn">🚪 Logout</button>
+    </div>
+  </nav>
+
+  <!-- ===== USER DASHBOARD ===== -->
+  <div class="dashboard" id="userDashboard">
+    <h2>🌱 Smart Agriculture & ⚡ Lightning Monitor</h2>
+    
+    <div class="user-welcome" id="welcomeMessage">
+      Welcome to your agricultural monitoring dashboard
     </div>
 
-    <a href="admin-dashboard.html" class="back-btn">← Back to Dashboard</a>
+    <div class="user-card">
+      <div class="row"><span class="label">Soil Moisture</span><span class="value" id="soilMoist">--</span></div>
+      <div class="row"><span class="label">Soil Temperature</span><span class="value" id="soilTemp">--</span></div>
+      <div class="row"><span class="label">Nitrate Level</span><span class="value" id="nitrate">--</span></div>
+    </div>
+
+    <div class="user-card">
+      <div class="row"><span class="label">Air Temperature</span><span class="value" id="airTemp">--</span></div>
+      <div class="row"><span class="label">Humidity</span><span class="value" id="humidity">--</span></div>
+    </div>
+
+    <div class="user-card">
+      <div class="row"><span class="label">Light Intensity</span><span class="value" id="light">--</span></div>
+      <div class="row"><span class="label">Wind Level</span><span class="value" id="wind">--</span></div>
+    </div>
+
+    <div class="user-card">
+      <div class="row"><span class="label">⚡ Lightning Level</span><span class="value" id="lLevel">--</span></div>
+      <div class="row"><span class="label">Lightning Intensity</span><span class="value" id="lIntensity">--</span></div>
+      <div class="row"><span class="label">Total Lightning</span><span class="value" id="lTotal">--</span></div>
+    </div>
+
+    <div class="text-center mt-20" style="color: #64748b; font-size: 12px;">
+      Last updated: <span id="lastUpdate">--</span>
+    </div>
+
+    <footer>
+      ESP32 Firebase Realtime Monitoring
+    </footer>
+  </div>
+
+  <!-- ===== ADMIN DASHBOARD ===== -->
+  <div class="dashboard" id="adminDashboard">
+    <div class="dashboard-header">
+      <h1>📊 System Dashboard</h1>
+      <div class="header-actions">
+        <button class="action-btn" onclick="showAddUserForm()">➕ Add New User</button>
+        <button class="action-btn secondary" onclick="showUsersManagement()">👥 Manage Users</button>
+      </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-header">
+          <div class="stat-title">Total Users</div>
+          <div class="stat-icon">👥</div>
+        </div>
+        <div class="stat-value" id="totalUsers">0</div>
+        <div class="stat-change" id="usersChange">--</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-header">
+          <div class="stat-title">Active Sensors</div>
+          <div class="stat-icon">🌡️</div>
+        </div>
+        <div class="stat-value" id="activeSensors">0</div>
+        <div class="stat-change">Connected Devices</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-header">
+          <div class="stat-title">System Status</div>
+          <div class="stat-icon">✅</div>
+        </div>
+        <div class="stat-value" id="systemStatus">Online</div>
+        <div class="stat-change">All systems operational</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-header">
+          <div class="stat-title">Last Update</div>
+          <div class="stat-icon">⏱️</div>
+        </div>
+        <div class="stat-value" id="adminLastUpdate">--</div>
+        <div class="stat-change">Real-time monitoring</div>
+      </div>
+    </div>
+
+    <!-- Users Grid -->
+    <div id="adminUsersGrid" class="users-grid">
+      <!-- Users will be loaded here -->
+    </div>
+
+    <div class="text-center mt-20" style="color: #64748b; font-size: 13px;">
+      Last updated: <span id="adminUpdateTime">--</span>
+    </div>
+  </div>
+
+  <!-- ===== ADD USER FORM ===== -->
+  <div class="form-card" id="addUserForm">
+    <div class="header">
+      <h1 id="formTitle">Add New User</h1>
+      <p id="formDescription">Create a new user account with specific role and permissions</p>
+    </div>
+
+    <div id="formMessage" class="message"></div>
+
+    <form id="userForm">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="name">Full Name <span>*</span></label>
+          <input type="text" id="name" class="form-input" placeholder="Enter full name" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="email">Email Address <span>*</span></label>
+          <input type="email" id="email" class="form-input" placeholder="Enter email address" required>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="password">
+            <span id="passwordLabel">Password</span> <span>*</span>
+          </label>
+          <input type="password" id="password" class="form-input" 
+                 placeholder="Enter password" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="confirmPassword">Confirm Password <span>*</span></label>
+          <input type="password" id="confirmPassword" class="form-input" 
+                 placeholder="Confirm password" required>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="role">Role <span>*</span></label>
+          <select id="role" class="form-select" required>
+            <option value="">Select Role</option>
+            <option value="admin">Administrator</option>
+            <option value="user">User</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="status">Account Status</label>
+          <select id="status" class="form-select">
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="location">Location (Optional)</label>
+        <input type="text" id="location" class="form-input" placeholder="Farm location">
+      </div>
+
+      <div class="form-actions">
+        <button type="button" class="form-btn secondary" onclick="showAdminDashboard()">Cancel</button>
+        <button type="submit" class="form-btn primary" id="submitBtn">
+          <span id="submitText">Create User</span>
+        </button>
+        <button type="button" class="form-btn delete" id="deleteBtn" style="display: none;" onclick="deleteCurrentUser()">
+          Delete User
+        </button>
+      </div>
+    </form>
   </div>
 
   <script>
-    // Check if user is logged in as admin
-    if (localStorage.getItem('loggedIn') !== 'true' || localStorage.getItem('userType') !== 'admin') {
-      window.location.href = 'index.html';
+    // Firebase Configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyDoqjMw4D-7_GOs0rlFL8oYzInMU8dh2FU",
+      authDomain: "smart-agri-4d47c.firebaseapp.com",
+      databaseURL: "https://smart-agri-4d47c-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "smart-agri-4d47c",
+      storageBucket: "smart-agri-4d47c.firebasestorage.app",
+      messagingSenderId: "588375675787",
+      appId: "1:588375675787:web:f5753cde90fc77fa83d58e"
+    };
+
+    // Initialize Firebase
+    const app = firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.database();
+
+    // Global variables
+    let currentUser = null;
+    let currentUserData = null;
+    let isEditMode = false;
+    let editUserId = null;
+
+    // DOM Elements
+    const loginPage = document.getElementById('loginPage');
+    const navbar = document.getElementById('navbar');
+    const userDashboard = document.getElementById('userDashboard');
+    const adminDashboard = document.getElementById('adminDashboard');
+    const addUserForm = document.getElementById('addUserForm');
+    const adminUsersGrid = document.getElementById('adminUsersGrid');
+
+    // Initialize the application
+    function initApp() {
+      // Check authentication state
+      auth.onAuthStateChanged(async (user) => {
+        if (user) {
+          // User is signed in
+          const userSnapshot = await db.ref('users/' + user.uid).once('value');
+          const userData = userSnapshot.val();
+          
+          if (userData) {
+            currentUser = user;
+            currentUserData = userData;
+            
+            // Update last login
+            await db.ref('users/' + user.uid).update({
+              lastLogin: firebase.database.ServerValue.TIMESTAMP
+            });
+            
+            // Show appropriate dashboard
+            showDashboard(userData.role);
+            
+            // Update navbar
+            updateNavbar(userData);
+          } else {
+            // User data not found, sign out
+            auth.signOut();
+            showLoginPage();
+          }
+        } else {
+          // No user is signed in
+          showLoginPage();
+        }
+      });
     }
 
-    // Logout functionality
-    document.getElementById('logoutBtn').addEventListener('click', () => {
-      localStorage.clear();
-      window.location.href = 'index.html';
-    });
-
-    // Simulated user data (in a real system, this would come from Firebase)
-    // You can replace this with actual Firebase data fetching
-    const users = [
-      { id: 1, name: "AFNITHA", status: "active" },
-      { id: 2, name: "USER002", status: "active" },
-      { id: 3, name: "USER003", status: "inactive" },
-      { id: 4, name: "USER004", status: "active" }
-    ];
-
-    // In a real implementation, you would fetch this data from Firebase
-    // For now, we'll use the main sensor data for demonstration
-    async function fetchAllUsersData() {
-      // This function would fetch data from different Firebase paths for each user
-      // For now, we'll use the same data for demonstration
+    // Show login page
+    function showLoginPage() {
+      loginPage.classList.remove('hidden');
+      navbar.classList.add('hidden');
+      userDashboard.classList.add('hidden');
+      adminDashboard.classList.add('hidden');
+      addUserForm.classList.add('hidden');
       
-      const response = await fetch('https://smart-agri-4d47c-default-rtdb.asia-southeast1.firebasedatabase.app/agri.json');
-      const data = await response.json();
+      // Clear form fields
+      document.getElementById('loginForm').reset();
+      document.getElementById('signupForm').reset();
+    }
+
+    // Show dashboard based on role
+    function showDashboard(role) {
+      loginPage.classList.add('hidden');
+      navbar.classList.remove('hidden');
       
-      // Update the first user card with real data
-      if (data) {
-        document.getElementById('user1_moist').textContent = data.soilMoist + ' %';
-        document.getElementById('user1_temp').textContent = data.soilTemp + ' °C';
-        document.getElementById('user1_air').textContent = data.airTemp + ' °C';
-        document.getElementById('user1_lightning').textContent = data.lightning.level;
-        
-        const now = new Date();
-        document.getElementById('user1_update').textContent = 
-          now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+      if (role === 'admin') {
+        userDashboard.classList.add('hidden');
+        adminDashboard.classList.remove('hidden');
+        addUserForm.classList.add('hidden');
+        loadAdminDashboard();
+      } else {
+        userDashboard.classList.remove('hidden');
+        adminDashboard.classList.add('hidden');
+        addUserForm.classList.add('hidden');
+        loadUserDashboard();
       }
     }
 
-    // Fetch data on load and every 30 seconds
-    fetchAllUsersData();
-    setInterval(fetchAllUsersData, 30000);
+    // Update navbar
+    function updateNavbar(userData) {
+      document.getElementById('navUserName').textContent = userData.name;
+      document.getElementById('navUserRole').textContent = userData.role === 'admin' ? 'Administrator' : 'User';
+      
+      const navLinks = document.getElementById('navLinks');
+      navLinks.innerHTML = '';
+      
+      if (userData.role === 'admin') {
+        navLinks.innerHTML = `
+          <a class="nav-link" onclick="showAdminDashboard()">📊 Dashboard</a>
+          <a class="nav-link" onclick="showUsersManagement()">👥 Users</a>
+          <a class="nav-link" onclick="showAddUserForm()">➕ Add User</a>
+          <a class="nav-link" onclick="showUserDashboard()">📈 Live Data</a>
+        `;
+        document.getElementById('navTitle').textContent = 'Smart Agriculture Admin';
+      } else {
+        navLinks.innerHTML = `
+          <a class="nav-link active" onclick="showUserDashboard()">📊 Dashboard</a>
+          <a class="nav-link" onclick="showAdminDashboard()" style="display: none;">Admin</a>
+        `;
+        document.getElementById('navTitle').textContent = 'Smart Agriculture';
+      }
+    }
+
+    // Load user dashboard
+    function loadUserDashboard() {
+      const sensorsRef = db.ref('sensors/' + currentUser.uid);
+      
+      document.getElementById('welcomeMessage').innerHTML = 
+        `Welcome <strong>${currentUserData.name}</strong> to your agricultural monitoring dashboard`;
+      
+      onValue(sensorsRef, (snapshot) => {
+        const data = snapshot.val();
+        if (!data) return;
+
+        // Update sensor values
+        document.getElementById("soilMoist").innerText = data.soilMoist + " %";
+        document.getElementById("soilTemp").innerText = data.soilTemp + " °C";
+        document.getElementById("nitrate").innerText = data.nitrate.toFixed(1);
+        document.getElementById("airTemp").innerText = data.airTemp + " °C";
+        document.getElementById("humidity").innerText = data.humidity + " %";
+        document.getElementById("light").innerText = data.light + " %";
+        document.getElementById("wind").innerText = data.wind + " %";
+        document.getElementById("lLevel").innerText = data.lightning.level;
+        document.getElementById("lIntensity").innerText = data.lightning.intensity;
+        document.getElementById("lTotal").innerText = data.lightning.total;
+        
+        // Update last update time
+        const now = new Date();
+        document.getElementById("lastUpdate").textContent = 
+          now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', second:'2-digit'});
+      });
+    }
+
+    // Show user dashboard
+    function showUserDashboard() {
+      if (currentUserData.role === 'user') {
+        userDashboard.classList.remove('hidden');
+        adminDashboard.classList.add('hidden');
+        addUserForm.classList.add('hidden');
+      }
+    }
+
+    // Load admin dashboard
+    async function loadAdminDashboard() {
+      try {
+        // Get all users
+        const usersSnapshot = await db.ref('users').once('value');
+        const users = usersSnapshot.val() || {};
+        
+        // Calculate statistics
+        const totalUsers = Object.keys(users).length;
+        const activeUsers = Object.values(users).filter(u => u.status === 'active').length;
+        
+        // Update UI
+        document.getElementById('totalUsers').textContent = totalUsers;
+        document.getElementById('usersChange').textContent = 
+          `${activeUsers} active, ${totalUsers - activeUsers} inactive`;
+        
+        // Count active sensors
+        const sensorsSnapshot = await db.ref('sensors').once('value');
+        const sensors = sensorsSnapshot.val() || {};
+        const activeSensors = Object.keys(sensors).length;
+        document.getElementById('activeSensors').textContent = activeSensors;
+        
+        // Update last update time
+        updateAdminTime();
+        
+        // Load users for admin dashboard
+        loadUsersForAdmin();
+        
+      } catch (error) {
+        console.error('Error loading admin dashboard:', error);
+      }
+    }
+
+    // Show admin dashboard
+    function showAdminDashboard() {
+      if (currentUserData.role === 'admin') {
+        adminDashboard.classList.remove('hidden');
+        userDashboard.classList.add('hidden');
+        addUserForm.classList.add('hidden');
+        loadAdminDashboard();
+      }
+    }
+
+    // Load users for admin dashboard
+    async function loadUsersForAdmin() {
+      try {
+        const usersSnapshot = await db.ref('users').once('value');
+        const users = usersSnapshot.val() || {};
+        
+        const sensorsSnapshot = await db.ref('sensors').once('value');
+        const sensors = sensorsSnapshot.val() || {};
+        
+        let usersHTML = '';
+        
+        // Convert to array and sort by creation date
+        const usersArray = Object.entries(users).map(([id, data]) => ({
+          id,
+          ...data,
+          sensorData: sensors[id] || null,
+          initials: data.name.split(' ').map(n => n[0]).join('').toUpperCase()
+        })).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        
+        // Take first 6 users
+        const recentUsers = usersArray.slice(0, 6);
+        
+        recentUsers.forEach(user => {
+          usersHTML += `
+            <div class="user-mgmt-card">
+              <div class="user-mgmt-header">
+                <div class="user-mgmt-info">
+                  <div class="user-avatar">${user.initials}</div>
+                  <div class="user-mgmt-details">
+                    <h3>${user.name}</h3>
+                    <p>${user.email}</p>
+                  </div>
+                </div>
+                <div class="user-status ${user.status === 'active' ? 'status-active' : 'status-inactive'}">
+                  ${user.role} • ${user.status}
+                </div>
+              </div>
+              
+              <div class="sensor-data">
+                ${user.sensorData ? `
+                  <div class="sensor-row">
+                    <span class="sensor-label">Soil Moisture:</span>
+                    <span class="sensor-value">${user.sensorData.soilMoist}%</span>
+                  </div>
+                  <div class="sensor-row">
+                    <span class="sensor-label">Soil Temp:</span>
+                    <span class="sensor-value">${user.sensorData.soilTemp}°C</span>
+                  </div>
+                ` : `
+                  <div class="sensor-row">
+                    <span class="sensor-label">Sensor Status:</span>
+                    <span class="sensor-value" style="color: #f87171;">No Data</span>
+                  </div>
+                `}
+                <div class="sensor-row">
+                  <span class="sensor-label">Last Activity:</span>
+                  <span class="sensor-value">${formatDate(user.lastLogin || user.createdAt)}</span>
+                </div>
+              </div>
+              
+              <div class="user-mgmt-actions">
+                <button class="user-action-btn edit" onclick="editUser('${user.id}')">✏️ Edit</button>
+                <button class="user-action-btn view" onclick="viewUserData('${user.id}')">👁️ View</button>
+                <button class="user-action-btn delete" onclick="deleteUser('${user.id}', '${user.name}')">🗑️ Delete</button>
+              </div>
+            </div>
+          `;
+        });
+        
+        adminUsersGrid.innerHTML = usersHTML;
+        
+      } catch (error) {
+        console.error('Error loading users:', error);
+        adminUsersGrid.innerHTML = '<div class="loading">Error loading users data</div>';
+      }
+    }
+
+    // Show users management
+    function showUsersManagement() {
+      if (currentUserData.role === 'admin') {
+        adminDashboard.classList.remove('hidden');
+        userDashboard.classList.add('hidden');
+        addUserForm.classList.add('hidden');
+        loadUsersForAdmin();
+      }
+    }
+
+    // Show add user form
+    function showAddUserForm(userId = null) {
+      if (currentUserData.role === 'admin') {
+        adminDashboard.classList.add('hidden');
+        userDashboard.classList.add('hidden');
+        addUserForm.classList.remove('hidden');
+        
+        if (userId) {
+          // Edit mode
+          isEditMode = true;
+          editUserId = userId;
+          loadUserForEdit(userId);
+        } else {
+          // Add mode
+          isEditMode = false;
+          editUserId = null;
+          resetUserForm();
+        }
+      }
+    }
+
+    // Load user for editing
+    async function loadUserForEdit(userId) {
+      try {
+        const userSnapshot = await db.ref('users/' + userId).once('value');
+        const userData = userSnapshot.val();
+        
+        if (!userData) {
+          showFormMessage('User not found', 'error');
+          return;
+        }
+        
+        // Update form
+        document.getElementById('formTitle').textContent = 'Edit User';
+        document.getElementById('formDescription').textContent = 'Update user information and permissions';
+        document.getElementById('name').value = userData.name || '';
+        document.getElementById('email').value = userData.email || '';
+        document.getElementById('role').value = userData.role || 'user';
+        document.getElementById('status').value = userData.status || 'active';
+        document.getElementById('location').value = userData.location || '';
+        document.getElementById('passwordLabel').textContent = 'New Password';
+        document.getElementById('password').required = false;
+        document.getElementById('confirmPassword').required = false;
+        document.getElementById('submitText').textContent = 'Update User';
+        document.getElementById('deleteBtn').style.display = 'block';
+        
+      } catch (error) {
+        console.error('Error loading user for edit:', error);
+        showFormMessage('Error loading user data', 'error');
+      }
+    }
+
+    // Reset user form
+    function resetUserForm() {
+      document.getElementById('formTitle').textContent = 'Add New User';
+      document.getElementById('formDescription').textContent = 'Create a new user account with specific role and permissions';
+      document.getElementById('userForm').reset();
+      document.getElementById('passwordLabel').textContent = 'Password';
+      document.getElementById('password').required = true;
+      document.getElementById('confirmPassword').required = true;
+      document.getElementById('submitText').textContent = 'Create User';
+      document.getElementById('deleteBtn').style.display = 'none';
+      document.getElementById('formMessage').className = 'message';
+      document.getElementById('formMessage').style.display = 'none';
+    }
+
+    // User form submission
+    document.getElementById('userForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      // Get form values
+      const name = document.getElementById('name').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+      const confirmPassword = document.getElementById('confirmPassword').value;
+      const role = document.getElementById('role').value;
+      const status = document.getElementById('status').value;
+      const location = document.getElementById('location').value.trim();
+      
+      // Validation
+      if (!name || !email || !role) {
+        showFormMessage('Please fill in all required fields', 'error');
+        return;
+      }
+      
+      if (!isEditMode && (!password || password.length < 6)) {
+        showFormMessage('Password must be at least 6 characters', 'error');
+        return;
+      }
+      
+      if (!isEditMode && password !== confirmPassword) {
+        showFormMessage('Passwords do not match', 'error');
+        return;
+      }
+      
+      const submitBtn = document.getElementById('submitBtn');
+      const originalText = submitBtn.innerHTML;
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<span class="loading-spinner" style="display: inline-block; width: 20px; height: 20px;"></span> Processing...';
+      
+      try {
+        if (isEditMode) {
+          await updateUser(name, email, password, role, status, location);
+        } else {
+          await createUser(name, email, password, role, location);
+        }
+      } catch (error) {
+        console.error('Error saving user:', error);
+        showFormMessage(error.message, 'error');
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalText;
+      }
+    });
+
+    // Create new user
+    async function createUser(name, email, password, role, location) {
+      try {
+        // Create user with Firebase Authentication
+        const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+        const user = userCredential.user;
+        
+        // Store user data in database
+        const userData = {
+          name: name,
+          email: email,
+          role: role,
+          status: 'active',
+          location: location || '',
+          createdAt: firebase.database.ServerValue.TIMESTAMP,
+          lastLogin: null
+        };
+        
+        await db.ref('users/' + user.uid).set(userData);
+        
+        // Create sensor data path for the user
+        await db.ref('sensors/' + user.uid).set({
+          soilMoist: 0,
+          soilTemp: 0,
+          nitrate: 0,
+          airTemp: 0,
+          humidity: 0,
+          light: 0,
+          wind: 0,
+          lightning: {
+            level: 'Low',
+            intensity: 0,
+            total: 0
+          },
+          lastUpdated: firebase.database.ServerValue.TIMESTAMP
+        });
+        
+        // Sign out the new user and sign back in as admin
+        await auth.signOut();
+        await auth.signInWithEmailAndPassword(currentUser.email, localStorage.getItem('adminPassword') || 'admin123');
+        
+        showFormMessage('User created successfully!', 'success');
+        
+        // Reset form and go back to admin dashboard after 2 seconds
+        setTimeout(() => {
+          resetUserForm();
+          showAdminDashboard();
+        }, 2000);
+        
+      } catch (error) {
+        throw error;
+      }
+    }
+
+    // Update existing user
+    async function updateUser(name, email, password, role, status, location) {
+      try {
+        const updates = {
+          name: name,
+          email: email,
+          role: role,
+          status: status,
+          location: location || '',
+          updatedAt: firebase.database.ServerValue.TIMESTAMP
+        };
+        
+        await db.ref('users/' + editUserId).update(updates);
+        
+        if (password) {
+          showFormMessage('User updated. Note: Password changes require admin authentication.', 'warning');
+        } else {
+          showFormMessage('User updated successfully!', 'success');
+        }
+        
+        setTimeout(() => {
+          resetUserForm();
+          showAdminDashboard();
+        }, 2000);
+        
+      } catch (error) {
+        throw error;
+      }
+    }
+
+    // Delete current user (from edit form)
+    async function deleteCurrentUser() {
+      if (!editUserId) return;
+      
+      const userSnapshot = await db.ref('users/' + editUserId).once('value');
+      const userData = userSnapshot.val();
+      
+      if (!userData) return;
+      
+      deleteUser(editUserId, userData.name);
+    }
+
+    // Delete user
+    async function deleteUser(userId, userName) {
+      if (!confirm(`Are you sure you want to delete user "${userName}"? This will also delete all their sensor data.`)) {
+        return;
+      }
+      
+      try {
+        await db.ref('users/' + userId).remove();
+        await db.ref('sensors/' + userId).remove();
+        
+        if (isEditMode && userId === editUserId) {
+          showFormMessage('User deleted successfully!', 'success');
+          setTimeout(() => {
+            resetUserForm();
+            showAdminDashboard();
+          }, 2000);
+        } else {
+          alert('User deleted successfully');
+          loadAdminDashboard();
+        }
+      } catch (error) {
+        console.error('Error deleting user:', error);
+        alert('Error deleting user');
+      }
+    }
+
+    // Edit user
+    function editUser(userId) {
+      showAddUserForm(userId);
+    }
+
+    // View user data
+    function viewUserData(userId) {
+      // For now, just show a message
+      alert('View user data feature would show detailed sensor data for this user');
+    }
+
+    // Show form message
+    function showFormMessage(text, type) {
+      const messageDiv = document.getElementById('formMessage');
+      messageDiv.textContent = text;
+      messageDiv.className = `message ${type}`;
+      messageDiv.style.display = 'block';
+    }
+
+    // Update admin time
+    function updateAdminTime() {
+      const now = new Date();
+      const timeString = now.toLocaleTimeString([], { 
+        hour: '2-digit', 
+        minute: '2-digit',
+        second: '2-digit'
+      });
+      document.getElementById('adminUpdateTime').textContent = timeString;
+      document.getElementById('adminLastUpdate').textContent = timeString;
+    }
+
+    // Format date
+    function formatDate(timestamp) {
+      if (!timestamp) return 'Never';
+      
+      const date = new Date(timestamp);
+      const now = new Date();
+      const diffMs = now - date;
+      const diffMins = Math.floor(diffMs / 60000);
+      const diffHours = Math.floor(diffMs / 3600000);
+      const diffDays = Math.floor(diffMs / 86400000);
+      
+      if (diffMins < 60) {
+        return `${diffMins} min${diffMins !== 1 ? 's' : ''} ago`;
+      } else if (diffHours < 24) {
+        return `${diffHours} hour${diffHours !== 1 ? 's' : ''} ago`;
+      } else if (diffDays < 7) {
+        return `${diffDays} day${diffDays !== 1 ? 's' : ''} ago`;
+      } else {
+        return date.toLocaleDateString();
+      }
+    }
+
+    // ===== LOGIN/SIGNUP FUNCTIONS =====
+    const tabButtons = document.querySelectorAll('.tab-btn');
+    const forms = document.querySelectorAll('.form-content');
+
+    // Tab Switching
+    tabButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const tab = btn.dataset.tab;
+        
+        tabButtons.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        
+        forms.forEach(form => form.style.display = 'none');
+        document.getElementById(`${tab}Form`).style.display = 'block';
+      });
+    });
+
+    // Initialize default admin
+    async function initializeDefaultAdmin() {
+      const adminEmail = 'admin@agri.com';
+      const adminPassword = 'admin123';
+      
+      try {
+        const signInMethods = await auth.fetchSignInMethodsForEmail(adminEmail);
+        if (signInMethods.length === 0) {
+          const userCredential = await auth.createUserWithEmailAndPassword(adminEmail, adminPassword);
+          const user = userCredential.user;
+          
+          await db.ref('users/' + user.uid).set({
+            name: 'System Administrator',
+            email: adminEmail,
+            role: 'admin',
+            createdAt: firebase.database.ServerValue.TIMESTAMP,
+            status: 'active'
+          });
+          
+          // Create default user AFNITHA
+          try {
+            const afnithaCredential = await auth.createUserWithEmailAndPassword('afnitha@agri.com', '12345678');
+            await db.ref('users/' + afnithaCredential.user.uid).set({
+              name: 'AFNITHA',
+              email: 'afnitha@agri.com',
+              role: 'user',
+              createdAt: firebase.database.ServerValue.TIMESTAMP,
+              status: 'active'
+            });
+            
+            await db.ref('sensors/' + afnithaCredential.user.uid).set({
+              soilMoist: 65,
+              soilTemp: 25,
+              nitrate: 15.5,
+              airTemp: 28,
+              humidity: 65,
+              light: 75,
+              wind: 12,
+              lightning: {
+                level: 'Medium',
+                intensity: 45,
+                total: 12
+              },
+              lastUpdated: firebase.database.ServerValue.TIMESTAMP
+            });
+          } catch (error) {
+            console.log('AFNITHA user already exists or error:', error);
+          }
+          
+          // Sign out after creating users
+          await auth.signOut();
+        }
+      } catch (error) {
+        console.error('Error initializing default admin:', error);
+      }
+    }
+
+    // Login function
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const email = document.getElementById('loginEmail').value;
+      const password = document.getElementById('loginPassword').value;
+      const loginBtn = document.getElementById('loginBtn');
+      const messageDiv = document.getElementById('loginMessage');
+      
+      loginBtn.disabled = true;
+      loginBtn.textContent = 'Logging in...';
+      messageDiv.className = 'message';
+      
+      try {
+        // Store admin password for later use
+        if (email === 'admin@agri.com') {
+          localStorage.setItem('adminPassword', password);
+        }
+        
+        await auth.signInWithEmailAndPassword(email, password);
+        // The auth state change listener will handle the rest
+      } catch (error) {
+        console.error('Login error:', error);
+        messageDiv.textContent = error.message;
+        messageDiv.className = 'message error';
+        loginBtn.disabled = false;
+        loginBtn.textContent = 'Login';
+      }
+    });
+
+    // Signup function
+    document.getElementById('signupForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const name = document.getElementById('signupName').value;
+      const email = document.getElementById('signupEmail').value;
+      const password = document.getElementById('signupPassword').value;
+      const confirmPassword = document.getElementById('signupConfirmPassword').value;
+      const role = document.getElementById('signupRole').value;
+      const location = document.getElementById('signupLocation').value;
+      
+      const signupBtn = document.getElementById('signupBtn');
+      const messageDiv = document.getElementById('signupMessage');
+      
+      if (password !== confirmPassword) {
+        messageDiv.textContent = 'Passwords do not match';
+        messageDiv.className = 'message error';
+        return;
+      }
+      
+      if (password.length < 6) {
+        messageDiv.textContent = 'Password must be at least 6 characters';
+        messageDiv.className = 'message error';
+        return;
+      }
+      
+      signupBtn.disabled = true;
+      signupBtn.textContent = 'Creating Account...';
+      messageDiv.className = 'message';
+      
+      try {
+        const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+        const user = userCredential.user;
+        
+        const userData = {
+          name: name,
+          email: email,
+          role: role,
+          location: location || '',
+          createdAt: firebase.database.ServerValue.TIMESTAMP,
+          status: 'active',
+          lastLogin: null
+        };
+        
+        await db.ref('users/' + user.uid).set(userData);
+        
+        await db.ref('sensors/' + user.uid).set({
+          soilMoist: 0,
+          soilTemp: 0,
+          nitrate: 0,
+          airTemp: 0,
+          humidity: 0,
+          light: 0,
+          wind: 0,
+          lightning: {
+            level: 'Low',
+            intensity: 0,
+            total: 0
+          },
+          lastUpdated: firebase.database.ServerValue.TIMESTAMP
+        });
+        
+        messageDiv.textContent = 'Account created successfully! You are now logged in.';
+        messageDiv.className = 'message success';
+        
+        // Switch to login tab after 2 seconds
+        setTimeout(() => {
+          tabButtons[0].click();
+          signupForm.reset();
+        }, 2000);
+        
+      } catch (error) {
+        console.error('Signup error:', error);
+        messageDiv.textContent = error.message;
+        messageDiv.className = 'message error';
+      } finally {
+        signupBtn.disabled = false;
+        signupBtn.textContent = 'Create Account';
+      }
+    });
+
+    // Logout functionality
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+      auth.signOut();
+    });
+
+    // Auto-fill demo credentials
+    document.addEventListener('DOMContentLoaded', () => {
+      // Initialize default admin
+      initializeDefaultAdmin();
+      
+      // Check if URL has demo parameter
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('demo') === 'admin') {
+        document.getElementById('loginEmail').value = 'admin@agri.com';
+        document.getElementById('loginPassword').value = 'admin123';
+      } else if (urlParams.get('demo') === 'user') {
+        document.getElementById('loginEmail').value = 'afnitha@agri.com';
+        document.getElementById('loginPassword').value = '12345678';
+      }
+    });
+
+    // Initialize the app
+    initApp();
   </script>
 </body>
 </html>
