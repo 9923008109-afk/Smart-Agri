@@ -2,34 +2,76 @@
 <html lang="ta">
 <head>
 <meta charset="UTF-8">
-<title>Smart Agri Dashboard</title>
+<title>Smart Agriculture Dashboard</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+<!-- Chart.js -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
+<!-- jsPDF -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
 <style>
-body{margin:0;font-family:Arial;background:#020617;color:#e5e7eb}
+:root{
+  --bg:#020617;
+  --card:#020617;
+  --border:#1e293b;
+  --accent:#38bdf8;
+}
+body{
+  margin:0;
+  font-family:Segoe UI,Arial;
+  background:linear-gradient(135deg,#020617,#020617);
+  color:#e5e7eb;
+}
 .center{display:flex;justify-content:center;align-items:center;height:100vh}
-.card{background:#020617;padding:25px;width:320px;border-radius:10px;
-box-shadow:0 0 15px rgba(56,189,248,.4);text-align:center}
-input,button{width:100%;padding:10px;margin:8px 0;border-radius:5px;border:none}
-button{background:#38bdf8;font-weight:bold}
-header{background:#020617;padding:12px;display:flex;justify-content:space-between;
-border-bottom:1px solid #1e293b}
-.badge{padding:4px 10px;border-radius:20px;font-size:12px;font-weight:bold}
+.login-card{
+  background:var(--card);
+  padding:30px;
+  width:330px;
+  border-radius:12px;
+  box-shadow:0 0 20px rgba(56,189,248,.35);
+}
+.login-card h2{text-align:center;color:var(--accent)}
+input,button{
+  width:100%;padding:10px;margin:8px 0;border-radius:6px;border:none;
+}
+button{background:var(--accent);font-weight:bold;cursor:pointer}
+header{
+  padding:14px 18px;
+  display:flex;justify-content:space-between;
+  border-bottom:1px solid var(--border);
+}
+.badge{
+  padding:4px 10px;border-radius:20px;font-size:12px;font-weight:bold;
+}
 .admin{background:#22c55e;color:black}
 .user{background:#facc15;color:black}
-.box{border:1px solid #1e293b;border-radius:8px;padding:12px;margin-bottom:12px}
-.logout{background:#ef4444;padding:6px 12px;border-radius:5px;cursor:pointer}
+.container{padding:18px;max-width:1200px;margin:auto}
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+  gap:16px;
+}
+.card{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:15px;
+}
+.card h3{margin-top:0;color:#93c5fd}
+.logout{
+  background:#ef4444;padding:6px 14px;border-radius:6px;cursor:pointer;
+}
 canvas{background:#fff;border-radius:8px;padding:10px}
 </style>
 </head>
 
 <body>
 
-<!-- LOGIN -->
+<!-- ================= LOGIN ================= -->
 <div class="center" id="loginPage">
-  <div class="card">
+  <div class="login-card">
     <h2>🔐 Smart Agri Login</h2>
     <input id="username" placeholder="Username">
     <input id="password" type="password" placeholder="Password">
@@ -38,35 +80,49 @@ canvas{background:#fff;border-radius:8px;padding:10px}
   </div>
 </div>
 
-<!-- DASHBOARD -->
+<!-- ================= DASHBOARD ================= -->
 <div id="dashboard" style="display:none">
 <header>
-  <div>Smart Agri Dashboard <span id="roleBadge" class="badge"></span></div>
-  <div class="logout" onclick="logout()">Logout</div>
+  <div>
+    Smart Agriculture Dashboard
+    <span id="roleBadge" class="badge"></span>
+  </div>
+  <div>
+    <button onclick="downloadPDF()">📄 PDF Report</button>
+    <span class="logout" onclick="logout()">Logout</span>
+  </div>
 </header>
 
-<div style="padding:15px">
+<div class="container">
 
 <!-- USER VIEW -->
 <div id="userView">
-  <div class="box">
-    <b>👉 அடுத்த மாதம் சிறந்த பயிர்</b><br>
-    🌾 நெல் (Rice)<br>
-    🌿 இயற்கை உரம்: பஞ்சகவ்யா + வேப்பம் சாறு
-  </div>
+  <div class="grid">
 
-  <div class="box" id="liveData"></div>
+    <div class="card">
+      <h3>📅 அடுத்த மாதம் சிறந்த பயிர்</h3>
+      🌾 <b id="nextCrop">--</b><br><br>
+      🌿 இயற்கை உரம்:<br>
+      <b id="fertilizer">--</b>
+    </div>
 
-  <div class="box">
-    <h4>📊 பருவ பயிர் விளைச்சல்</h4>
-    <canvas id="seasonChart"></canvas>
+    <div class="card">
+      <h3>🌱 நில தகவல் (LIVE)</h3>
+      <div id="liveData">Loading...</div>
+    </div>
+
+    <div class="card">
+      <h3>📊 பருவ விளைச்சல்</h3>
+      <canvas id="seasonChart"></canvas>
+    </div>
+
   </div>
 </div>
 
 <!-- ADMIN VIEW -->
-<div id="adminView" style="display:none">
-  <div class="box">
-    <h4>👑 User-1 Field Data (Graph)</h4>
+<div id="adminView" style="margin-top:20px;display:none">
+  <div class="card">
+    <h3>👑 User-1 Field Data (Graph)</h3>
     <canvas id="adminChart"></canvas>
   </div>
 </div>
@@ -74,11 +130,12 @@ canvas{background:#fff;border-radius:8px;padding:10px}
 </div>
 </div>
 
-<!-- FIREBASE -->
+<!-- ================= FIREBASE + LOGIC ================= -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
 import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-database.js";
 
+/* ================= FIREBASE CONFIG ================= */
 const firebaseConfig={
  apiKey:"AIzaSyDoqjMw4D-7_GOs0rlFL8oYzInMU8dh2FU",
  authDomain:"smart-agri-4d47c.firebaseapp.com",
@@ -89,68 +146,144 @@ const firebaseConfig={
 const app=initializeApp(firebaseConfig);
 const db=getDatabase(app);
 
+/* ================= GLOBAL ================= */
 let role="";
+let adminChartObj=null;
+let seasonChartObj=null;
+window.lastData=null;
+window.lastCrop=null;
 
-/* ===== LOGIN LOGIC ===== */
+/* ================= LOGIN ================= */
 window.login=()=>{
- let u=username.value,p=password.value;
- if(u==="admin" && p==="admin123"){ role="admin"; load(); }
- else if(u==="user" && p==="user123"){ role="user"; load(); }
- else{ msg.innerText="❌ தவறான Login"; msg.style.color="red"; }
+  if(username.value==="admin" && password.value==="admin123"){
+    role="admin";load();
+  }else if(username.value==="user" && password.value==="user123"){
+    role="user";load();
+  }else{
+    msg.innerText="❌ தவறான Login";
+    msg.style.color="red";
+  }
 };
 
 function load(){
- loginPage.style.display="none";
- dashboard.style.display="block";
- roleBadge.innerText=role.toUpperCase();
- roleBadge.className="badge "+role;
- adminView.style.display=(role==="admin")?"block":"none";
- userView.style.display="block";
+  loginPage.style.display="none";
+  dashboard.style.display="block";
+  roleBadge.innerText=role.toUpperCase();
+  roleBadge.className="badge "+role;
+  adminView.style.display=(role==="admin")?"block":"none";
+  startFirebase();
 }
 
-/* ===== FIREBASE LIVE DATA ===== */
-onValue(ref(db,"agri/field1"),snap=>{
- let d=snap.val();
- if(!d) return;
+/* ================= MONTH-BASED CROP LOGIC ================= */
+function recommendCrop(d){
+  const m=new Date().getMonth()+1;
 
- liveData.innerHTML=`
- 🌱 மண் ஈரப்பதம்: <b>${d.soilMoist}%</b><br>
- 🌡 வெப்பநிலை: <b>${d.soilTemp}°C</b><br>
- 💧 ஈரப்பதம்: <b>${d.humidity}%</b><br>
- ⚡ Lightning: <b>${d.lightning.level}</b><br>
- 🧪 Nitrate: <b>${d.nitrate}</b>
- `;
+  if((m>=6 && m<=9) && d.soilMoist>55)
+    return {crop:"நெல் (Rice)",fert:"பஞ்சகவ்யா + மாட்டு சாணம்"};
 
- if(role==="admin"){
-  new Chart(adminChart,{
-   type:"line",
-   data:{
-    labels:["Soil","Temp","Humidity","Nitrate"],
-    datasets:[{
-     label:"User-1 Field Data",
-     data:[d.soilMoist,d.soilTemp,d.humidity,d.nitrate],
-     borderColor:"green"
-    }]
-   }
+  if((m>=2 && m<=3) && d.soilMoist<45)
+    return {crop:"கடலை (Groundnut)",fert:"வேப்பம் புண்ணாக்கு"};
+
+  if(m>=4 && m<=5)
+    return {crop:"சோளம் (Maize)",fert:"ஜீவாமிர்தம்"};
+
+  return {crop:"காய்கறிகள்",fert:"கம்போஸ்ட் உரம்"};
+}
+
+/* ================= FIREBASE LISTENERS ================= */
+function startFirebase(){
+
+  onValue(ref(db,"agri/field1"),snap=>{
+    const d=snap.val();
+    if(!d) return;
+
+    liveData.innerHTML=`
+      🌱 மண் ஈரப்பதம்: <b>${d.soilMoist}%</b><br>
+      🌡 வெப்பநிலை: <b>${d.soilTemp}°C</b><br>
+      💧 ஈரப்பதம்: <b>${d.humidity}%</b><br>
+      🧪 நைட்ரேட்: <b>${d.nitrate}</b><br>
+      ⚡ மின்னல்: <b>${d.lightning.level}</b>
+    `;
+
+    const rec=recommendCrop(d);
+    nextCrop.innerText=rec.crop;
+    fertilizer.innerText=rec.fert;
+
+    window.lastData=d;
+    window.lastCrop=rec;
+
+    if(role==="admin"){
+      if(adminChartObj) adminChartObj.destroy();
+      adminChartObj=new Chart(adminChart,{
+        type:"bar",
+        data:{
+          labels:["Soil","Temp","Humidity","Nitrate"],
+          datasets:[{
+            label:"User-1 Field Data",
+            data:[d.soilMoist,d.soilTemp,d.humidity,d.nitrate],
+            backgroundColor:"#22c55e"
+          }]
+        }
+      });
+    }
   });
- }
-});
 
-/* ===== SEASON CHART ===== */
-onValue(ref(db,"agri/seasonal"),snap=>{
- let s=snap.val();
- new Chart(seasonChart,{
-  type:"bar",
-  data:{
-   labels:Object.keys(s),
-   datasets:[{label:"Yield %",data:Object.values(s),backgroundColor:"#38bdf8"}]
+  onValue(ref(db,"agri/seasonal"),snap=>{
+    const s=snap.val();
+    if(!s) return;
+    if(seasonChartObj) seasonChartObj.destroy();
+    seasonChartObj=new Chart(seasonChart,{
+      type:"line",
+      data:{
+        labels:Object.keys(s),
+        datasets:[{
+          label:"Yield %",
+          data:Object.values(s),
+          borderColor:"#38bdf8",
+          fill:false
+        }]
+      }
+    });
+  });
+}
+
+/* ================= PDF DOWNLOAD ================= */
+window.downloadPDF=()=>{
+  if(!window.lastData || !window.lastCrop){
+    alert("Data not ready");
+    return;
   }
- });
-});
+  const { jsPDF } = window.jspdf;
+  const pdf=new jsPDF();
+  let y=15;
+
+  pdf.setFontSize(16);
+  pdf.text("Smart Agriculture Report",10,y); y+=10;
+
+  pdf.setFontSize(11);
+  pdf.text(`Date: ${new Date().toLocaleDateString()}`,10,y); y+=10;
+
+  pdf.text("Field Data:",10,y); y+=8;
+  pdf.text(`Soil Moisture: ${lastData.soilMoist}%`,10,y); y+=7;
+  pdf.text(`Soil Temp: ${lastData.soilTemp} °C`,10,y); y+=7;
+  pdf.text(`Humidity: ${lastData.humidity}%`,10,y); y+=7;
+  pdf.text(`Nitrate: ${lastData.nitrate}`,10,y); y+=7;
+  pdf.text(`Lightning: ${lastData.lightning.level}`,10,y); y+=10;
+
+  pdf.text("Next Month Recommendation:",10,y); y+=8;
+  pdf.text(`Crop: ${lastCrop.crop}`,10,y); y+=7;
+  pdf.text(`Natural Fertilizer: ${lastCrop.fert}`,10,y); y+=10;
+
+  if(role==="admin"){
+    pdf.text("Admin View: User-1 Field Summary Included",10,y);
+  }
+
+  pdf.save("Smart_Agri_Report.pdf");
+};
 
 window.logout=()=>{
- dashboard.style.display="none";
- loginPage.style.display="flex";
+  dashboard.style.display="none";
+  loginPage.style.display="flex";
 };
 </script>
 
