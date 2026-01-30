@@ -2,188 +2,227 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Smart Agriculture Dashboard</title>
+<title>Smart Agri Login System</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<!-- Firebase -->
-<script src="https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js"></script>
-<script src="https://www.gstatic.com/firebasejs/12.8.0/firebase-database.js"></script>
-
 <style>
-body{margin:0;font-family:Segoe UI;background:#0f172a;color:#e5e7eb}
-.hidden{display:none}
-input,select,button{padding:10px;border-radius:6px;border:none}
-button{cursor:pointer}
-.card{background:#020617;padding:15px;border-radius:10px;margin:10px 0}
-.nav{background:#020617;padding:10px;display:flex;justify-content:space-between}
+  body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #020617;
+    color: #e5e7eb;
+  }
+
+  .center {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+  }
+
+  .card {
+    background: #020617;
+    border-radius: 10px;
+    box-shadow: 0 0 15px rgba(56,189,248,0.4);
+    padding: 30px;
+    width: 320px;
+    text-align: center;
+  }
+
+  h2 {
+    color: #38bdf8;
+    margin-bottom: 15px;
+  }
+
+  input {
+    width: 100%;
+    padding: 10px;
+    margin: 8px 0;
+    border-radius: 5px;
+    border: none;
+  }
+
+  button {
+    width: 100%;
+    padding: 10px;
+    background: #38bdf8;
+    border: none;
+    border-radius: 5px;
+    font-weight: bold;
+    cursor: pointer;
+  }
+
+  button:hover {
+    background: #0ea5e9;
+  }
+
+  .dashboard {
+    display: none;
+  }
+
+  header {
+    background: #020617;
+    padding: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #1e293b;
+  }
+
+  .badge {
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: bold;
+  }
+
+  .admin {
+    background: #22c55e;
+    color: black;
+  }
+
+  .user {
+    background: #facc15;
+    color: black;
+  }
+
+  .content {
+    padding: 20px;
+  }
+
+  .data-box {
+    background: #020617;
+    border: 1px solid #1e293b;
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 10px;
+  }
+
+  .logout {
+    background: #ef4444;
+    color: white;
+    padding: 6px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+
+  .admin-only {
+    border-left: 4px solid #22c55e;
+  }
 </style>
 </head>
 
 <body>
 
-<!-- LOGIN -->
-<div id="loginPage">
-  <h2>🌱 Smart Agriculture Login</h2>
-  <form id="loginForm">
-    <input id="loginEmail" placeholder="Email" required><br><br>
-    <input id="loginPassword" type="password" placeholder="Password" required><br><br>
-    <button>Login</button>
-  </form>
-  <p id="loginMsg"></p>
-</div>
-
-<!-- NAVBAR -->
-<div class="nav hidden" id="navbar">
-  <div>
-    <b id="navUserName"></b> (<span id="navUserRole"></span>)
+<!-- ================= LOGIN ================= -->
+<div class="center" id="loginPage">
+  <div class="card">
+    <h2>🔐 Smart Agri Login</h2>
+    <input type="text" id="username" placeholder="Username">
+    <input type="password" id="password" placeholder="Password">
+    <button onclick="login()">Login</button>
+    <p id="msg"></p>
   </div>
-  <button onclick="logout()">Logout</button>
 </div>
 
-<!-- USER DASHBOARD -->
-<div id="userDashboard" class="hidden">
-  <h2>User Dashboard</h2>
-  <div class="card">Soil Moisture: <span id="soilMoist">--</span></div>
-  <div class="card">Soil Temp: <span id="soilTemp">--</span></div>
-  <div class="card">Nitrate: <span id="nitrate">--</span></div>
-  <div class="card">Air Temp: <span id="airTemp">--</span></div>
-  <div class="card">Humidity: <span id="humidity">--</span></div>
-  <div class="card">Lightning: <span id="lightning">--</span></div>
-</div>
+<!-- ================= DASHBOARD ================= -->
+<div class="dashboard" id="dashboard">
+  <header>
+    <div>
+      <strong>Smart Agriculture Dashboard</strong>
+      <span id="roleBadge" class="badge"></span>
+    </div>
+    <div class="logout" onclick="logout()">Logout</div>
+  </header>
 
-<!-- ADMIN DASHBOARD -->
-<div id="adminDashboard" class="hidden">
-  <h2>Admin Dashboard</h2>
+  <div class="content">
 
-  <h3>Add User (DB only)</h3>
-  <input id="uName" placeholder="Name">
-  <input id="uEmail" placeholder="Email">
-  <select id="uRole">
-    <option value="user">User</option>
-    <option value="admin">Admin</option>
-  </select>
-  <button onclick="addUser()">Add</button>
+    <div class="data-box">
+      🌱 Soil Moisture: <strong>45%</strong>
+    </div>
 
-  <h3>Users</h3>
-  <div id="usersList"></div>
+    <div class="data-box">
+      🌡 Soil Temp: <strong>28°C</strong>
+    </div>
+
+    <div class="data-box">
+      ⚡ Lightning Level: <strong>HIGH</strong>
+    </div>
+
+    <div class="data-box">
+      ⚡ Intensity: <strong>7</strong>
+    </div>
+
+    <!-- ADMIN ONLY -->
+    <div class="data-box admin-only" id="adminPanel">
+      👑 Admin Control Panel<br>
+      • System Settings<br>
+      • Data Reset<br>
+      • Maintenance Mode
+    </div>
+
+  </div>
 </div>
 
 <script>
-/* ================= FIREBASE ================= */
-firebase.initializeApp({
-  apiKey: "AIzaSyDoqjMw4D-7_GOs0rlFL8oYzInMU8dh2FU",
-  authDomain: "smart-agri-4d47c.firebaseapp.com",
-  databaseURL: "https://smart-agri-4d47c-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "smart-agri-4d47c"
-});
-
-const auth = firebase.auth();
-const db = firebase.database();
-
-let currentUser, currentData;
-
-/* ================= AUTH ================= */
-auth.onAuthStateChanged(async user=>{
-  if(!user){ showLogin(); return; }
-
-  currentUser = user;
-  const snap = await db.ref("users/"+user.uid).once("value");
-
-  if(!snap.exists()){
-    const role = user.email==="admin@agri.com"?"admin":"user";
-    await db.ref("users/"+user.uid).set({
-      name: role==="admin"?"System Admin":user.email,
-      email:user.email,
-      role,
-      status:"active"
-    });
+/* ================= USER DATABASE (FRONTEND ONLY) ================= */
+const users = {
+  admin: {
+    username: "admin",
+    password: "admin123",
+    role: "admin"
+  },
+  user: {
+    username: "user",
+    password: "user123",
+    role: "user"
   }
-
-  currentData = (await db.ref("users/"+user.uid).once("value")).val();
-  showDashboard();
-});
-
-/* ================= LOGIN ================= */
-loginForm.onsubmit = async e=>{
-  e.preventDefault();
-  try{
-    await auth.signInWithEmailAndPassword(
-      loginEmail.value,
-      loginPassword.value
-    );
-  }catch(err){ loginMsg.innerText = err.message; }
 };
 
-/* ================= LOGOUT ================= */
-function logout(){ auth.signOut(); }
+/* ================= LOGIN ================= */
+function login() {
+  const u = document.getElementById("username").value;
+  const p = document.getElementById("password").value;
+  const msg = document.getElementById("msg");
 
-/* ================= UI ================= */
-function showLogin(){
-  loginPage.classList.remove("hidden");
-  navbar.classList.add("hidden");
-  userDashboard.classList.add("hidden");
-  adminDashboard.classList.add("hidden");
-}
-
-function showDashboard(){
-  loginPage.classList.add("hidden");
-  navbar.classList.remove("hidden");
-  navUserName.innerText = currentData.name;
-  navUserRole.innerText = currentData.role;
-
-  if(currentData.role==="admin"){
-    adminDashboard.classList.remove("hidden");
-    userDashboard.classList.add("hidden");
-    loadUsers();
-  }else{
-    userDashboard.classList.remove("hidden");
-    adminDashboard.classList.add("hidden");
-    loadSensors();
+  if (u === users.admin.username && p === users.admin.password) {
+    loadDashboard("admin");
+  }
+  else if (u === users.user.username && p === users.user.password) {
+    loadDashboard("user");
+  }
+  else {
+    msg.innerText = "❌ Invalid Login";
+    msg.style.color = "red";
   }
 }
 
-/* ================= USER DATA ================= */
-function loadSensors(){
-  db.ref("sensors/"+currentUser.uid).on("value",s=>{
-    if(!s.exists())return;
-    const d=s.val();
-    soilMoist.innerText=d.soilMoist+"%";
-    soilTemp.innerText=d.soilTemp+"°C";
-    nitrate.innerText=d.nitrate;
-    airTemp.innerText=d.airTemp+"°C";
-    humidity.innerText=d.humidity+"%";
-    lightning.innerText=d.lightning.level;
-  });
+/* ================= DASHBOARD ================= */
+function loadDashboard(role) {
+  document.getElementById("loginPage").style.display = "none";
+  document.getElementById("dashboard").style.display = "block";
+
+  const badge = document.getElementById("roleBadge");
+  const adminPanel = document.getElementById("adminPanel");
+
+  if (role === "admin") {
+    badge.innerText = "ADMIN";
+    badge.className = "badge admin";
+    adminPanel.style.display = "block";
+  } else {
+    badge.innerText = "USER";
+    badge.className = "badge user";
+    adminPanel.style.display = "none";
+  }
 }
 
-/* ================= ADMIN ================= */
-async function addUser(){
-  const id = db.ref().child("users").push().key;
-  await db.ref("users/"+id).set({
-    name:uName.value,
-    email:uEmail.value,
-    role:uRole.value,
-    status:"active"
-  });
-  await db.ref("sensors/"+id).set({
-    soilMoist:0,soilTemp:0,nitrate:0,airTemp:0,humidity:0,
-    lightning:{level:"Low",intensity:0,total:0}
-  });
-  loadUsers();
-}
-
-async function loadUsers(){
-  const snap = await db.ref("users").once("value");
-  usersList.innerHTML="";
-  snap.forEach(u=>{
-    usersList.innerHTML+=`
-      <div class="card">
-        ${u.val().name} (${u.val().role})
-        <button onclick="db.ref('users/${u.key}').remove();db.ref('sensors/${u.key}').remove();loadUsers()">Delete</button>
-      </div>`;
-  });
+/* ================= LOGOUT ================= */
+function logout() {
+  document.getElementById("dashboard").style.display = "none";
+  document.getElementById("loginPage").style.display = "flex";
+  document.getElementById("msg").innerText = "";
 }
 </script>
+
 </body>
 </html>
