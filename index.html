@@ -247,7 +247,7 @@ canvas{
 }
 .alternative-crops-grid {
   display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(180px,1fr));
+  grid-template-columns:repeat(auto-fill,minmax(170px,1fr));
   gap:10px;
 }
 .alternative-crops-list {
@@ -630,7 +630,7 @@ canvas{
       <!-- Enhanced Alternative Crops Section -->
       <div class="alternative-crops-container">
         <div class="alternative-crops-title">
-          <h4 style="color:#93c5fd;margin:0;" id="alternativeCropsTitle">📋 Top 6 Alternative Crops:</h4>
+          <h4 style="color:#93c5fd;margin:0;" id="alternativeCropsTitle">📋 Top 8 Alternative Crops:</h4>
           <div class="view-toggle-sm">
             <button class="view-sm-btn active" onclick="switchAlternativeView('grid')">
               <i class="bi bi-grid-3x3-gap"></i>
@@ -857,7 +857,7 @@ const translations = {
     expectedProfitLabel: "எதிர்பார்க்கப்படும் லாபம்:",
     riskFactorsLabel: "அபாய காரணிகள்:",
     fertilizerTitle: "🌿 இயற்கை உரங்கள்:",
-    alternativeCropsTitle: "📋 முதல் 6 மாற்று பயிர்கள்:",
+    alternativeCropsTitle: "📋 முதல் 8 மாற்று பயிர்கள்:",
     liveDataTitle: "🌱 நில தகவல் (நேரடி மானிட்டர்)",
     gaugeChartLabel: "கேஜ் வரைபடம்",
     lineChartLabel: "கோட்டு வரைபடம்",
@@ -935,7 +935,7 @@ const translations = {
     expectedProfitLabel: "Expected Profit:",
     riskFactorsLabel: "Risk Factors:",
     fertilizerTitle: "🌿 Natural Fertilizers:",
-    alternativeCropsTitle: "📋 Top 6 Alternative Crops:",
+    alternativeCropsTitle: "📋 Top 8 Alternative Crops:",
     liveDataTitle: "🌱 Field Information (LIVE Monitor)",
     gaugeChartLabel: "Gauge Chart",
     lineChartLabel: "Line Chart",
@@ -1034,7 +1034,7 @@ const monthMapping = {
   }
 };
 
-// Enhanced Crop database with profit scoring
+// Enhanced Crop database with profit scoring - ADDED 2 NEW CROPS
 const cropDatabase = [
   {
     name: { ta: "நெல் (குருவை)", en: "Paddy (Kuruvai)" },
@@ -1049,7 +1049,7 @@ const cropDatabase = [
       en: ["Panchagavya", "Cow Dung Manure", "Seaweed Extract"] 
     },
     profitRange: { ta: "₹40,000 - ₹60,000/ஏக்கர்", en: "₹40,000 - ₹60,000/acre" },
-    profitScore: 75, // Profit score for sorting (0-100)
+    profitScore: 75,
     risk: { ta: "குறைந்தது", en: "Low" },
     duration: { ta: "90-120 நாட்கள்", en: "90-120 days" },
     waterReq: { ta: "அதிகம்", en: "High" },
@@ -1243,6 +1243,92 @@ const cropDatabase = [
     risk: { ta: "குறைந்தது", en: "Low" },
     duration: { ta: "90-110 நாட்கள்", en: "90-110 days" },
     waterReq: { ta: "குறைந்தது", en: "Low" },
+    marketDemand: { ta: "நல்லது", en: "Good" }
+  },
+  /* ====== ADDED 2 NEW CROPS ====== */
+  {
+    name: { ta: "மொச்சை", en: "Moth Bean" },
+    icon: "🫘",
+    seasons: ["Kharif"],
+    sowingMonths: [5, 6, 7],
+    harvestMonths: [8, 9, 10],
+    idealTemp: { min: 25, max: 35 },
+    idealMoisture: { min: 35, max: 55 },
+    naturalFertilizers: { 
+      ta: ["மாட்டுச் சாணம்", "வேம்பு புண்ணாக்கு", "கம்போஸ்ட்"], 
+      en: ["Cow Dung Manure", "Neem Cake", "Compost"] 
+    },
+    profitRange: { ta: "₹28,000 - ₹42,000/ஏக்கர்", en: "₹28,000 - ₹42,000/acre" },
+    profitScore: 58,
+    risk: { ta: "குறைந்தது", en: "Low" },
+    duration: { ta: "70-85 நாட்கள்", en: "70-85 days" },
+    waterReq: { ta: "குறைந்தது", en: "Low" },
+    marketDemand: { ta: "நல்லது", en: "Good" },
+    specialNote: { 
+      ta: "வறட்சி எதிர்ப்பு பயிர், குறைந்த மழையில் வளரக்கூடியது",
+      en: "Drought-resistant crop, suitable for low rainfall areas"
+    }
+  },
+  {
+    name: { ta: "எள்", en: "Sesame" },
+    icon: "⚫",
+    seasons: ["Summer", "Kharif"],
+    sowingMonths: [0, 1, 5, 6],
+    harvestMonths: [2, 3, 8, 9],
+    idealTemp: { min: 25, max: 35 },
+    idealMoisture: { min: 45, max: 65 },
+    naturalFertilizers: { 
+      ta: ["கம்போஸ்ட்", "மாட்டுச் சாணம்", "வேம்பு புண்ணாக்கு"], 
+      en: ["Compost", "Cow Dung Manure", "Neem Cake"] 
+    },
+    profitRange: { ta: "₹45,000 - ₹65,000/ஏக்கர்", en: "₹45,000 - ₹65,000/acre" },
+    profitScore: 78,
+    risk: { ta: "மிதமானது", en: "Medium" },
+    duration: { ta: "85-100 நாட்கள்", en: "85-100 days" },
+    waterReq: { ta: "குறைந்தது", en: "Low" },
+    marketDemand: { ta: "உயர்ந்தது", en: "High" },
+    specialNote: { 
+      ta: "எண்ணெய் வித்துக்கள், உயர்ந்த சந்தை மதிப்பு",
+      en: "Oil seeds, high market value"
+    }
+  },
+  /* ====== END OF NEW CROPS ====== */
+  {
+    name: { ta: "முட்டைக்கோஸ்", en: "Cabbage" },
+    icon: "🥬",
+    seasons: ["Rabi", "Winter"],
+    sowingMonths: [9, 10, 11],
+    harvestMonths: [1, 2, 3],
+    idealTemp: { min: 15, max: 25 },
+    idealMoisture: { min: 60, max: 80 },
+    naturalFertilizers: { 
+      ta: ["கோழிக் கழிவு", "மாட்டுச் சாணம்", "பச்சைத் தழை உரம்"], 
+      en: ["Poultry Manure", "Cow Dung Manure", "Green Manure"] 
+    },
+    profitRange: { ta: "₹55,000 - ₹80,000/ஏக்கர்", en: "₹55,000 - ₹80,000/acre" },
+    profitScore: 82,
+    risk: { ta: "மிதமானது", en: "Medium" },
+    duration: { ta: "80-100 நாட்கள்", en: "80-100 days" },
+    waterReq: { ta: "அதிகம்", en: "High" },
+    marketDemand: { ta: "நல்லது", en: "Good" }
+  },
+  {
+    name: { ta: "கேரட்", en: "Carrot" },
+    icon: "🥕",
+    seasons: ["Rabi", "Winter"],
+    sowingMonths: [9, 10, 11],
+    harvestMonths: [1, 2, 3, 4],
+    idealTemp: { min: 15, max: 25 },
+    idealMoisture: { min: 65, max: 85 },
+    naturalFertilizers: { 
+      ta: ["கம்போஸ்ட்", "மாட்டுச் சாணம்", "மீன் உரம்"], 
+      en: ["Compost", "Cow Dung Manure", "Fish Emulsion"] 
+    },
+    profitRange: { ta: "₹65,000 - ₹95,000/ஏக்கர்", en: "₹65,000 - ₹95,000/acre" },
+    profitScore: 86,
+    risk: { ta: "மிதமானது", en: "Medium" },
+    duration: { ta: "90-110 நாட்கள்", en: "90-110 days" },
+    waterReq: { ta: "அதிகம்", en: "High" },
     marketDemand: { ta: "நல்லது", en: "Good" }
   }
 ];
@@ -1530,29 +1616,26 @@ function showBuyerDashboard(){
 
 /* ---------- Weather Prediction Functions ---------- */
 function predictRainfall(fieldData) {
-  // Advanced rainfall prediction based on sensor data
   const humidity = fieldData.humidity || 0;
   const temperature = fieldData.temperature || fieldData.soilTemp || 0;
-  const pressure = fieldData.pressure || 1013; // Default sea level pressure
+  const pressure = fieldData.pressure || 1013;
   const lightning = fieldData.lightning || { level: "Low", distance: 0 };
   
   let rainfallProbability = 0;
   let hoursToRainfall = 0;
   let alertLevel = "low";
   
-  // Calculate probability based on multiple factors
   if (humidity > 85) {
     rainfallProbability += 40;
-    hoursToRainfall = 1 + Math.random() * 2; // 1-3 hours
+    hoursToRainfall = 1 + Math.random() * 2;
   } else if (humidity > 75) {
     rainfallProbability += 25;
-    hoursToRainfall = 3 + Math.random() * 3; // 3-6 hours
+    hoursToRainfall = 3 + Math.random() * 3;
   } else if (humidity > 65) {
     rainfallProbability += 15;
-    hoursToRainfall = 6 + Math.random() * 6; // 6-12 hours
+    hoursToRainfall = 6 + Math.random() * 6;
   }
   
-  // Temperature effect (lower temp increases rain chance)
   if (temperature < 25) {
     rainfallProbability += 10;
     hoursToRainfall = Math.max(1, hoursToRainfall - 2);
@@ -1561,7 +1644,6 @@ function predictRainfall(fieldData) {
     hoursToRainfall += 3;
   }
   
-  // Pressure effect (low pressure = higher rain chance)
   if (pressure < 1000) {
     rainfallProbability += 20;
     hoursToRainfall = Math.max(1, hoursToRainfall - 3);
@@ -1570,10 +1652,9 @@ function predictRainfall(fieldData) {
     hoursToRainfall += 4;
   }
   
-  // Lightning effect
   if (lightning.level === "High") {
     rainfallProbability += 30;
-    hoursToRainfall = 1 + Math.random(); // 1-2 hours
+    hoursToRainfall = 1 + Math.random();
     alertLevel = "high";
   } else if (lightning.level === "Medium") {
     rainfallProbability += 15;
@@ -1581,7 +1662,6 @@ function predictRainfall(fieldData) {
     alertLevel = "medium";
   }
   
-  // Ensure within bounds
   rainfallProbability = Math.max(0, Math.min(95, rainfallProbability));
   hoursToRainfall = Math.max(0.5, Math.min(24, hoursToRainfall));
   
@@ -1605,11 +1685,9 @@ function updateWeatherDisplay(prediction) {
   const lightningActivityEl = document.getElementById('lightningActivity');
   const weatherAdviceEl = document.getElementById('weatherAdvice');
   
-  // Update prediction values
   nextRainfallEl.textContent = `${prediction.probability}% in ${prediction.hours}h`;
   lightningActivityEl.textContent = prediction.lightningRisk;
   
-  // Set alert level and message
   if (prediction.alertLevel === "high" || prediction.probability > 70) {
     alertBox.className = "weather-alert alert-high";
     alertIcon.textContent = "⚠️";
@@ -1885,7 +1963,7 @@ function getNextMonthRecommendation(currentMonth, fieldData) {
   suitableCrops.sort((a, b) => b.profitScore - a.profitScore);
   
   const topCrops = suitableCrops.slice(0, 3);
-  const alternatives = suitableCrops.slice(1, 7); // Get top 6 alternatives (excluding #1)
+  const alternatives = suitableCrops.slice(1, 9); // Get top 8 alternatives (excluding #1)
   
   let bestCrop = topCrops[0];
   const soilMoist = fieldData?.soilMoist || 50;
@@ -1917,10 +1995,10 @@ function getAlternativeCrops() {
     return [];
   }
   
-  // Sort by profit score and return top 6 alternatives (excluding the #1)
+  // Sort by profit score and return top 8 alternatives (excluding the #1)
   return suitableCrops
     .sort((a, b) => b.profitScore - a.profitScore)
-    .slice(1, 7); // Return exactly 6 alternatives
+    .slice(1, 9); // Return exactly 8 alternatives
 }
 
 function updateCropDisplay(recommendation) {
@@ -1941,7 +2019,7 @@ function updateCropDisplay(recommendation) {
     fertilizerElement.innerHTML = fertilizerHTML;
   }
   
-  // Update alternative crops (shows exactly 6)
+  // Update alternative crops (shows exactly 8)
   const alternatives = getAlternativeCrops();
   updateAlternativeCropsDisplay(alternatives);
   
@@ -1996,6 +2074,16 @@ function updateCropDetails(crop) {
       </div>
     </div>
   `;
+  
+  // Add special note for new crops if available
+  if (crop.specialNote) {
+    detailsHTML += `
+      <div style="margin-top:10px;padding:10px;background:rgba(56,189,248,0.1);border-radius:6px;border-left:3px solid #38bdf8;">
+        <div style="color:#38bdf8;font-size:12px;font-weight:bold;">💡 Special Note:</div>
+        <div style="color:#94a3b8;font-size:12px;">${crop.specialNote[currentLanguage]}</div>
+      </div>
+    `;
+  }
   
   detailsElement.innerHTML = detailsHTML;
 }
@@ -2239,6 +2327,16 @@ function showCropDetails(cropName) {
       </ul>
     </div>
   `;
+  
+  // Add special note for new crops if available
+  if (crop.specialNote) {
+    detailsHTML += `
+      <div style="background:#1e293b;padding:15px;border-radius:6px;margin-top:15px;">
+        <div style="color:#38bdf8;font-weight:bold;margin-bottom:10px;">💡 Special Features:</div>
+        <div style="color:#94a3b8;font-size:14px;">${crop.specialNote[currentLanguage]}</div>
+      </div>
+    `;
+  }
   
   document.getElementById('modalCropDetails').innerHTML = detailsHTML;
   document.getElementById('modalOverlay').style.display = 'block';
