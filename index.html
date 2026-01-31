@@ -23,6 +23,8 @@
   --accent:#38bdf8;
   --agrobolt-green:#22c55e;
   --agrobolt-yellow:#facc15;
+  --agrobolt-red:#ef4444;
+  --agrobolt-blue:#3b82f6;
 }
 body{
   margin:0;
@@ -414,7 +416,38 @@ canvas{
 }
 .data-good {color:var(--agrobolt-green);}
 .data-warning {color:var(--agrobolt-yellow);}
-.data-danger {color:#ef4444;}
+.data-danger {color:var(--agrobolt-red);}
+
+/* Weather Alert Styles */
+.weather-alert {
+  background:linear-gradient(135deg, rgba(59,130,246,0.2), rgba(56,189,248,0.2));
+  border-left:4px solid var(--agrobolt-blue);
+  padding:12px;
+  border-radius:6px;
+  margin-top:15px;
+  animation:pulse 2s infinite;
+}
+@keyframes pulse {
+  0% { opacity: 0.8; }
+  50% { opacity: 1; }
+  100% { opacity: 0.8; }
+}
+.alert-high {
+  background:linear-gradient(135deg, rgba(239,68,68,0.2), rgba(248,113,113,0.2));
+  border-left:4px solid var(--agrobolt-red);
+}
+.alert-medium {
+  background:linear-gradient(135deg, rgba(245,158,11,0.2), rgba(251,191,36,0.2));
+  border-left:4px solid var(--agrobolt-yellow);
+}
+.alert-low {
+  background:linear-gradient(135deg, rgba(34,197,94,0.2), rgba(74,222,128,0.2));
+  border-left:4px solid var(--agrobolt-green);
+}
+.alert-icon {
+  font-size:20px;
+  margin-right:10px;
+}
 
 /* Chart Toggle */
 .chart-toggle {
@@ -499,6 +532,19 @@ canvas{
   background:#16a34a;
   transform:translateY(-1px);
 }
+
+/* Lightning Indicator */
+.lightning-indicator {
+  display:inline-block;
+  padding:3px 8px;
+  border-radius:12px;
+  font-size:11px;
+  font-weight:bold;
+  margin-left:5px;
+}
+.lightning-low {background:rgba(34,197,94,0.2);color:#22c55e;}
+.lightning-medium {background:rgba(250,204,21,0.2);color:#facc15;}
+.lightning-high {background:rgba(239,68,68,0.2);color:#ef4444;}
 </style>
 </head>
 
@@ -584,7 +630,7 @@ canvas{
       <!-- Enhanced Alternative Crops Section -->
       <div class="alternative-crops-container">
         <div class="alternative-crops-title">
-          <h4 style="color:#93c5fd;margin:0;" id="alternativeCropsTitle">📋 Alternative Crops:</h4>
+          <h4 style="color:#93c5fd;margin:0;" id="alternativeCropsTitle">📋 Top 6 Alternative Crops:</h4>
           <div class="view-toggle-sm">
             <button class="view-sm-btn active" onclick="switchAlternativeView('grid')">
               <i class="bi bi-grid-3x3-gap"></i>
@@ -610,6 +656,18 @@ canvas{
 
   <div class="card">
     <h3 id="liveDataTitle">🌱 Field Information (LIVE Monitor)</h3>
+    
+    <!-- Weather Alert Section -->
+    <div id="weatherAlert" class="weather-alert" style="display:none;">
+      <div style="display:flex;align-items:center;">
+        <span class="alert-icon" id="alertIcon">⚠️</span>
+        <div>
+          <div style="font-weight:bold;color:#e5e7eb;" id="alertTitle">Weather Alert</div>
+          <div style="font-size:13px;color:#94a3b8;" id="alertMessage">--</div>
+          <div style="font-size:12px;color:#38bdf8;margin-top:5px;" id="alertTime">--</div>
+        </div>
+      </div>
+    </div>
     
     <!-- Chart Type Toggle -->
     <div class="chart-toggle">
@@ -652,6 +710,36 @@ canvas{
         <div class="data-label" id="nitrateLabel">Soil Nitrate</div>
         <div class="data-value" id="nitrateValue">--</div>
         <div class="data-unit">ppm</div>
+      </div>
+      <div class="data-item">
+        <div class="data-label" id="lightningLabel">Lightning Risk</div>
+        <div class="data-value" id="lightningValue">--</div>
+        <div class="data-unit" id="lightningUnit">level</div>
+      </div>
+      <div class="data-item">
+        <div class="data-label" id="rainfallLabel">Rainfall Alert</div>
+        <div class="data-value" id="rainfallValue">--</div>
+        <div class="data-unit" id="rainfallUnit">hours</div>
+      </div>
+    </div>
+    
+    <!-- Weather Prediction -->
+    <div style="margin-top:20px;padding:15px;background:#1e293b;border-radius:8px;">
+      <h4 style="color:#93c5fd;margin-top:0;margin-bottom:10px;">🌧️ Weather Prediction:</h4>
+      <div id="weatherPrediction">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+          <div>
+            <div style="color:#94a3b8;font-size:12px;">Next Rainfall Prediction</div>
+            <div style="color:#38bdf8;font-size:16px;font-weight:bold;" id="nextRainfall">--</div>
+          </div>
+          <div>
+            <div style="color:#94a3b8;font-size:12px;">Lightning Activity</div>
+            <div style="color:#facc15;font-size:16px;font-weight:bold;" id="lightningActivity">--</div>
+          </div>
+        </div>
+        <div style="font-size:13px;color:#94a3b8;" id="weatherAdvice">
+          Weather data loading...
+        </div>
       </div>
     </div>
     
@@ -769,7 +857,7 @@ const translations = {
     expectedProfitLabel: "எதிர்பார்க்கப்படும் லாபம்:",
     riskFactorsLabel: "அபாய காரணிகள்:",
     fertilizerTitle: "🌿 இயற்கை உரங்கள்:",
-    alternativeCropsTitle: "📋 மாற்று பயிர்கள்:",
+    alternativeCropsTitle: "📋 முதல் 6 மாற்று பயிர்கள்:",
     liveDataTitle: "🌱 நில தகவல் (நேரடி மானிட்டர்)",
     gaugeChartLabel: "கேஜ் வரைபடம்",
     lineChartLabel: "கோட்டு வரைபடம்",
@@ -777,7 +865,25 @@ const translations = {
     tempLabel: "வெப்பநிலை",
     humidityLabel: "காற்று ஈரப்பதம்",
     nitrateLabel: "மண் நைட்ரேட்",
+    lightningLabel: "மின்னல் அபாயம்",
+    rainfallLabel: "மழை எச்சரிக்கை",
     cropDetailsTitle: "🎯 பரிந்துரைக்கப்பட்ட பயிர் தகவல்:",
+    
+    // Weather Alerts
+    weatherAlert: "வானிலை எச்சரிக்கை",
+    rainfallPrediction: "மழை கணிப்பு",
+    lightningActivity: "மின்னல் செயல்பாடு",
+    highRisk: "அதிக அபாயம்",
+    mediumRisk: "மிதமான அபாயம்",
+    lowRisk: "குறைந்த அபாயம்",
+    noRisk: "அபாயம் இல்லை",
+    
+    // Alert Messages
+    alertRainfallSoon: "⚡ மழை வரவிருக்கிறது! 1-3 மணி நேரத்தில் மழை பெய்யக்கூடும்",
+    alertRainfallLikely: "🌧️ மழை வாய்ப்பு உள்ளது! 3-6 மணி நேரத்தில் மழை பெய்யக்கூடும்",
+    alertLightningHigh: "⚠️ அதிக மின்னல் அபாயம்! வெளிப்புற பணிகளை தவிர்க்கவும்",
+    alertLightningMedium: "⚡ மிதமான மின்னல் அபாயம்! முன்னெச்சரிக்கை மேற்கொள்ளவும்",
+    alertOptimalConditions: "✅ உகந்த வானிலை நிலைமைகள்",
     
     // Buyer Dashboard
     buyerDashboardTitle: "AgroBolt சந்தை",
@@ -808,13 +914,7 @@ const translations = {
     medium: "மிதமானது",
     low: "குறைந்தது",
     profitPotential: "லாப திறன்",
-    riskLevel: "அபாய அளவு",
-    
-    // Alternative Crops
-    viewGrid: "கட்டம் பார்வை",
-    viewList: "பட்டியல் பார்வை",
-    select: "தேர்ந்தெடு",
-    comparison: "ஒப்பீடு"
+    riskLevel: "அபாய அளவு"
   },
   en: {
     // Login Page
@@ -835,7 +935,7 @@ const translations = {
     expectedProfitLabel: "Expected Profit:",
     riskFactorsLabel: "Risk Factors:",
     fertilizerTitle: "🌿 Natural Fertilizers:",
-    alternativeCropsTitle: "📋 Alternative Crops:",
+    alternativeCropsTitle: "📋 Top 6 Alternative Crops:",
     liveDataTitle: "🌱 Field Information (LIVE Monitor)",
     gaugeChartLabel: "Gauge Chart",
     lineChartLabel: "Line Chart",
@@ -843,7 +943,25 @@ const translations = {
     tempLabel: "Temperature",
     humidityLabel: "Humidity",
     nitrateLabel: "Soil Nitrate",
+    lightningLabel: "Lightning Risk",
+    rainfallLabel: "Rainfall Alert",
     cropDetailsTitle: "🎯 Recommended Crop Details:",
+    
+    // Weather Alerts
+    weatherAlert: "Weather Alert",
+    rainfallPrediction: "Rainfall Prediction",
+    lightningActivity: "Lightning Activity",
+    highRisk: "High Risk",
+    mediumRisk: "Medium Risk",
+    lowRisk: "Low Risk",
+    noRisk: "No Risk",
+    
+    // Alert Messages
+    alertRainfallSoon: "⚡ Rainfall incoming! Rain expected in 1-3 hours",
+    alertRainfallLikely: "🌧️ Rainfall likely! Rain possible in 3-6 hours",
+    alertLightningHigh: "⚠️ High lightning risk! Avoid outdoor activities",
+    alertLightningMedium: "⚡ Medium lightning risk! Take precautions",
+    alertOptimalConditions: "✅ Optimal weather conditions",
     
     // Buyer Dashboard
     buyerDashboardTitle: "AgroBolt Market",
@@ -874,21 +992,49 @@ const translations = {
     medium: "Medium",
     low: "Low",
     profitPotential: "Profit Potential",
-    riskLevel: "Risk Level",
-    
-    // Alternative Crops
-    viewGrid: "Grid View",
-    viewList: "List View",
-    select: "Select",
-    comparison: "Comparison"
+    riskLevel: "Risk Level"
   }
 };
 
-/* ---------- Tamil Agricultural Database ---------- */
-const tamilMonthNames = ["சித்திரை", "வைகாசி", "ஆனி", "ஆடி", "ஆவணி", "புரட்டாசி", "ஐப்பசி", "கார்த்திகை", "மார்கழி", "தை", "மாசி", "பங்குனி"];
-const englishMonthNames = ["April", "May", "June", "July", "August", "September", "October", "November", "December", "January", "February", "March"];
+/* ---------- Fixed Tamil-English Month Mapping ---------- */
+const monthMapping = {
+  ta: {
+    names: ["சித்திரை", "வைகாசி", "ஆனி", "ஆடி", "ஆவணி", "புரட்டாசி", "ஐப்பசி", "கார்த்திகை", "மார்கழி", "தை", "மாசி", "பங்குனி"],
+    seasons: {
+      0: "சித்திரை (Summer)",
+      1: "வைகாசி (Summer)",
+      2: "ஆனி (Summer)",
+      3: "ஆடி (Monsoon)",
+      4: "ஆவணி (Monsoon)",
+      5: "புரட்டாசி (Monsoon)",
+      6: "ஐப்பசி (Post-Monsoon)",
+      7: "கார்த்திகை (Post-Monsoon)",
+      8: "மார்கழி (Winter)",
+      9: "தை (Winter)",
+      10: "மாசி (Winter)",
+      11: "பங்குனி (Spring)"
+    }
+  },
+  en: {
+    names: ["Chithirai (Apr)", "Vaikasi (May)", "Aani (Jun)", "Aadi (Jul)", "Avani (Aug)", "Purattasi (Sep)", "Aippasi (Oct)", "Karthigai (Nov)", "Margazhi (Dec)", "Thai (Jan)", "Maasi (Feb)", "Panguni (Mar)"],
+    seasons: {
+      0: "Chithirai (Summer)",
+      1: "Vaikasi (Summer)",
+      2: "Aani (Summer)",
+      3: "Aadi (Monsoon)",
+      4: "Avani (Monsoon)",
+      5: "Purattasi (Monsoon)",
+      6: "Aippasi (Post-Monsoon)",
+      7: "Karthigai (Post-Monsoon)",
+      8: "Margazhi (Winter)",
+      9: "Thai (Winter)",
+      10: "Maasi (Winter)",
+      11: "Panguni (Spring)"
+    }
+  }
+};
 
-// Enhanced Crop database with more alternatives
+// Enhanced Crop database with profit scoring
 const cropDatabase = [
   {
     name: { ta: "நெல் (குருவை)", en: "Paddy (Kuruvai)" },
@@ -903,10 +1049,10 @@ const cropDatabase = [
       en: ["Panchagavya", "Cow Dung Manure", "Seaweed Extract"] 
     },
     profitRange: { ta: "₹40,000 - ₹60,000/ஏக்கர்", en: "₹40,000 - ₹60,000/acre" },
+    profitScore: 75, // Profit score for sorting (0-100)
     risk: { ta: "குறைந்தது", en: "Low" },
     duration: { ta: "90-120 நாட்கள்", en: "90-120 days" },
     waterReq: { ta: "அதிகம்", en: "High" },
-    profitPotential: "High",
     marketDemand: { ta: "உயர்ந்தது", en: "High" }
   },
   {
@@ -922,10 +1068,10 @@ const cropDatabase = [
       en: ["Jeevamrutha", "Neem Cake", "Compost"] 
     },
     profitRange: { ta: "₹30,000 - ₹45,000/ஏக்கர்", en: "₹30,000 - ₹45,000/acre" },
+    profitScore: 60,
     risk: { ta: "குறைந்தது", en: "Low" },
     duration: { ta: "85-100 நாட்கள்", en: "85-100 days" },
     waterReq: { ta: "மிதமானது", en: "Medium" },
-    profitPotential: "Medium",
     marketDemand: { ta: "நல்லது", en: "Good" }
   },
   {
@@ -941,10 +1087,10 @@ const cropDatabase = [
       en: ["Neem Cake", "Cow Dung Manure", "Rhizobium Culture"] 
     },
     profitRange: { ta: "₹50,000 - ₹75,000/ஏக்கர்", en: "₹50,000 - ₹75,000/acre" },
+    profitScore: 85,
     risk: { ta: "மிதமானது", en: "Medium" },
     duration: { ta: "100-120 நாட்கள்", en: "100-120 days" },
     waterReq: { ta: "குறைந்தது", en: "Low" },
-    profitPotential: "High",
     marketDemand: { ta: "உயர்ந்தது", en: "High" }
   },
   {
@@ -960,10 +1106,10 @@ const cropDatabase = [
       en: ["Fish Emulsion", "Castor Cake", "Green Manure"] 
     },
     profitRange: { ta: "₹60,000 - ₹90,000/ஏக்கர்", en: "₹60,000 - ₹90,000/acre" },
+    profitScore: 90,
     risk: { ta: "அதிகம்", en: "High" },
     duration: { ta: "120-150 நாட்கள்", en: "120-150 days" },
     waterReq: { ta: "மிதமானது", en: "Medium" },
-    profitPotential: "Very High",
     marketDemand: { ta: "மிக உயர்ந்தது", en: "Very High" }
   },
   {
@@ -979,10 +1125,10 @@ const cropDatabase = [
       en: ["Green Manure", "Cow Dung Manure", "Neem Cake"] 
     },
     profitRange: { ta: "₹25,000 - ₹40,000/ஏக்கர்", en: "₹25,000 - ₹40,000/acre" },
+    profitScore: 55,
     risk: { ta: "குறைந்தது", en: "Low" },
     duration: { ta: "60-75 நாட்கள்", en: "60-75 days" },
     waterReq: { ta: "குறைந்தது", en: "Low" },
-    profitPotential: "Medium",
     marketDemand: { ta: "நல்லது", en: "Good" }
   },
   {
@@ -998,10 +1144,10 @@ const cropDatabase = [
       en: ["Panchagavya", "Cow Dung Manure", "Poultry Manure"] 
     },
     profitRange: { ta: "₹80,000 - ₹1,20,000/ஏக்கர்", en: "₹80,000 - ₹1,20,000/acre" },
+    profitScore: 95,
     risk: { ta: "அதிகம்", en: "High" },
     duration: { ta: "12-18 மாதங்கள்", en: "12-18 months" },
     waterReq: { ta: "அதிகம்", en: "High" },
-    profitPotential: "Very High",
     marketDemand: { ta: "நிலையானது", en: "Stable" }
   },
   {
@@ -1017,10 +1163,10 @@ const cropDatabase = [
       en: ["Compost", "Cow Dung Manure", "Castor Cake"] 
     },
     profitRange: { ta: "₹70,000 - ₹1,00,000/ஏக்கர்", en: "₹70,000 - ₹1,00,000/acre" },
+    profitScore: 88,
     risk: { ta: "அதிகம்", en: "High" },
     duration: { ta: "90-120 நாட்கள்", en: "90-120 days" },
     waterReq: { ta: "மிதமானது", en: "Medium" },
-    profitPotential: "High",
     marketDemand: { ta: "உயர்ந்தது", en: "High" }
   },
   {
@@ -1036,11 +1182,68 @@ const cropDatabase = [
       en: ["Green Manure", "Fish Emulsion", "Poultry Manure"] 
     },
     profitRange: { ta: "₹80,000 - ₹1,20,000/ஏக்கர்", en: "₹80,000 - ₹1,20,000/acre" },
+    profitScore: 92,
     risk: { ta: "அதிகம்", en: "High" },
     duration: { ta: "90-100 நாட்கள்", en: "90-100 days" },
     waterReq: { ta: "அதிகம்", en: "High" },
-    profitPotential: "Very High",
     marketDemand: { ta: "மிக உயர்ந்தது", en: "Very High" }
+  },
+  {
+    name: { ta: "வாழை", en: "Banana" },
+    icon: "🍌",
+    seasons: ["Perennial"],
+    sowingMonths: [5, 6, 7, 8],
+    harvestMonths: [5, 6, 7, 8],
+    idealTemp: { min: 15, max: 35 },
+    idealMoisture: { min: 60, max: 80 },
+    naturalFertilizers: { 
+      ta: ["மாட்டுச் சாணம்", "கோழிக் கழிவு", "மீன் உரம்"], 
+      en: ["Cow Dung Manure", "Poultry Manure", "Fish Emulsion"] 
+    },
+    profitRange: { ta: "₹1,00,000 - ₹1,50,000/ஏக்கர்", en: "₹1,00,000 - ₹1,50,000/acre" },
+    profitScore: 98,
+    risk: { ta: "மிதமானது", en: "Medium" },
+    duration: { ta: "12-14 மாதங்கள்", en: "12-14 months" },
+    waterReq: { ta: "அதிகம்", en: "High" },
+    marketDemand: { ta: "உயர்ந்தது", en: "High" }
+  },
+  {
+    name: { ta: "பருத்தி", en: "Cotton" },
+    icon: "👕",
+    seasons: ["Kharif"],
+    sowingMonths: [5, 6],
+    harvestMonths: [10, 11, 0],
+    idealTemp: { min: 21, max: 30 },
+    idealMoisture: { min: 50, max: 65 },
+    naturalFertilizers: { 
+      ta: ["கம்போஸ்ட்", "மாட்டுச் சாணம்", "வேம்பு புண்ணாக்கு"], 
+      en: ["Compost", "Cow Dung Manure", "Neem Cake"] 
+    },
+    profitRange: { ta: "₹35,000 - ₹55,000/ஏக்கர்", en: "₹35,000 - ₹55,000/acre" },
+    profitScore: 70,
+    risk: { ta: "மிதமானது", en: "Medium" },
+    duration: { ta: "150-180 நாட்கள்", en: "150-180 days" },
+    waterReq: { ta: "மிதமானது", en: "Medium" },
+    marketDemand: { ta: "நல்லது", en: "Good" }
+  },
+  {
+    name: { ta: "மக்காச்சோளம்", en: "Sorghum" },
+    icon: "🌾",
+    seasons: ["Kharif", "Rabi"],
+    sowingMonths: [5, 6, 9, 10],
+    harvestMonths: [8, 9, 0, 1],
+    idealTemp: { min: 26, max: 35 },
+    idealMoisture: { min: 40, max: 60 },
+    naturalFertilizers: { 
+      ta: ["கம்போஸ்ட்", "மாட்டுச் சாணம்"], 
+      en: ["Compost", "Cow Dung Manure"] 
+    },
+    profitRange: { ta: "₹20,000 - ₹35,000/ஏக்கர்", en: "₹20,000 - ₹35,000/acre" },
+    profitScore: 45,
+    risk: { ta: "குறைந்தது", en: "Low" },
+    duration: { ta: "90-110 நாட்கள்", en: "90-110 days" },
+    waterReq: { ta: "குறைந்தது", en: "Low" },
+    marketDemand: { ta: "நல்லது", en: "Good" }
   }
 ];
 
@@ -1072,24 +1275,6 @@ const marketDatabase = [
     grade: "A+",
     farmer: "செல்வம்",
     phone: "+91 76543 21098"
-  },
-  { 
-    crop: { ta: "மிளகாய்", en: "Chilli" }, 
-    price: "₹120/kg", 
-    quantity: { ta: "1000 கிலோ", en: "1000 kg" }, 
-    location: { ta: "சேலம்", en: "Salem" },
-    grade: "A",
-    farmer: "கணேஷ்",
-    phone: "+91 65432 10987"
-  },
-  { 
-    crop: { ta: "வாழை", en: "Banana" }, 
-    price: "₹25/kg", 
-    quantity: { ta: "4000 கிலோ", en: "4000 kg" }, 
-    location: { ta: "கோயம்புத்தூர்", en: "Coimbatore" },
-    grade: "B+",
-    farmer: "பழனிச்சாமி",
-    phone: "+91 94321 09876"
   }
 ];
 
@@ -1144,6 +1329,8 @@ function updateLanguage() {
   document.getElementById('tempLabel').textContent = lang.tempLabel;
   document.getElementById('humidityLabel').textContent = lang.humidityLabel;
   document.getElementById('nitrateLabel').textContent = lang.nitrateLabel;
+  document.getElementById('lightningLabel').textContent = lang.lightningLabel;
+  document.getElementById('rainfallLabel').textContent = lang.rainfallLabel;
   document.getElementById('cropDetailsTitle').textContent = lang.cropDetailsTitle;
   
   // Update buyer dashboard
@@ -1194,6 +1381,11 @@ function switchAlternativeView(mode) {
     gridView.classList.remove('active');
     listView.classList.add('active');
   }
+}
+
+/* ---------- Get Month Name Correctly ---------- */
+function getMonthName(monthIndex, lang = currentLanguage) {
+  return monthMapping[lang].names[monthIndex];
 }
 
 /* ---------- Update Alternative Crops Display ---------- */
@@ -1336,6 +1528,150 @@ function showBuyerDashboard(){
   createPriceChart();
 }
 
+/* ---------- Weather Prediction Functions ---------- */
+function predictRainfall(fieldData) {
+  // Advanced rainfall prediction based on sensor data
+  const humidity = fieldData.humidity || 0;
+  const temperature = fieldData.temperature || fieldData.soilTemp || 0;
+  const pressure = fieldData.pressure || 1013; // Default sea level pressure
+  const lightning = fieldData.lightning || { level: "Low", distance: 0 };
+  
+  let rainfallProbability = 0;
+  let hoursToRainfall = 0;
+  let alertLevel = "low";
+  
+  // Calculate probability based on multiple factors
+  if (humidity > 85) {
+    rainfallProbability += 40;
+    hoursToRainfall = 1 + Math.random() * 2; // 1-3 hours
+  } else if (humidity > 75) {
+    rainfallProbability += 25;
+    hoursToRainfall = 3 + Math.random() * 3; // 3-6 hours
+  } else if (humidity > 65) {
+    rainfallProbability += 15;
+    hoursToRainfall = 6 + Math.random() * 6; // 6-12 hours
+  }
+  
+  // Temperature effect (lower temp increases rain chance)
+  if (temperature < 25) {
+    rainfallProbability += 10;
+    hoursToRainfall = Math.max(1, hoursToRainfall - 2);
+  } else if (temperature > 35) {
+    rainfallProbability -= 5;
+    hoursToRainfall += 3;
+  }
+  
+  // Pressure effect (low pressure = higher rain chance)
+  if (pressure < 1000) {
+    rainfallProbability += 20;
+    hoursToRainfall = Math.max(1, hoursToRainfall - 3);
+  } else if (pressure > 1020) {
+    rainfallProbability -= 10;
+    hoursToRainfall += 4;
+  }
+  
+  // Lightning effect
+  if (lightning.level === "High") {
+    rainfallProbability += 30;
+    hoursToRainfall = 1 + Math.random(); // 1-2 hours
+    alertLevel = "high";
+  } else if (lightning.level === "Medium") {
+    rainfallProbability += 15;
+    hoursToRainfall = Math.max(1, hoursToRainfall - 1);
+    alertLevel = "medium";
+  }
+  
+  // Ensure within bounds
+  rainfallProbability = Math.max(0, Math.min(95, rainfallProbability));
+  hoursToRainfall = Math.max(0.5, Math.min(24, hoursToRainfall));
+  
+  return {
+    probability: Math.round(rainfallProbability),
+    hours: Math.round(hoursToRainfall * 10) / 10,
+    alertLevel: alertLevel,
+    lightningRisk: lightning.level || "Low"
+  };
+}
+
+function updateWeatherDisplay(prediction) {
+  const lang = translations[currentLanguage];
+  const alertBox = document.getElementById('weatherAlert');
+  const alertIcon = document.getElementById('alertIcon');
+  const alertTitle = document.getElementById('alertTitle');
+  const alertMessage = document.getElementById('alertMessage');
+  const alertTime = document.getElementById('alertTime');
+  
+  const nextRainfallEl = document.getElementById('nextRainfall');
+  const lightningActivityEl = document.getElementById('lightningActivity');
+  const weatherAdviceEl = document.getElementById('weatherAdvice');
+  
+  // Update prediction values
+  nextRainfallEl.textContent = `${prediction.probability}% in ${prediction.hours}h`;
+  lightningActivityEl.textContent = prediction.lightningRisk;
+  
+  // Set alert level and message
+  if (prediction.alertLevel === "high" || prediction.probability > 70) {
+    alertBox.className = "weather-alert alert-high";
+    alertIcon.textContent = "⚠️";
+    alertTitle.textContent = lang.highRisk;
+    alertMessage.textContent = lang.alertRainfallSoon;
+    alertTime.textContent = `${lang.rainfallPrediction}: ${prediction.hours} ${currentLanguage === 'ta' ? 'மணி நேரம்' : 'hours'}`;
+    alertBox.style.display = "block";
+    
+    weatherAdviceEl.innerHTML = currentLanguage === 'ta' 
+      ? "⚡ <b>எச்சரிக்கை:</b> விரைவில் கன மழை வரவிருக்கிறது. பாதுகாப்பான இடத்திற்கு செல்லவும்."
+      : "⚡ <b>Warning:</b> Heavy rainfall expected soon. Move to a safe location.";
+    
+  } else if (prediction.alertLevel === "medium" || prediction.probability > 50) {
+    alertBox.className = "weather-alert alert-medium";
+    alertIcon.textContent = "🌧️";
+    alertTitle.textContent = lang.mediumRisk;
+    alertMessage.textContent = lang.alertRainfallLikely;
+    alertTime.textContent = `${lang.rainfallPrediction}: ${prediction.hours} ${currentLanguage === 'ta' ? 'மணி நேரம்' : 'hours'}`;
+    alertBox.style.display = "block";
+    
+    weatherAdviceEl.innerHTML = currentLanguage === 'ta'
+      ? "🌧️ <b>எச்சரிக்கை:</b> மழை வரவிருக்கிறது. வெளிப்புற பணிகளை திட்டமிடுங்கள்."
+      : "🌧️ <b>Caution:</b> Rainfall likely. Plan outdoor activities accordingly.";
+    
+  } else if (prediction.lightningRisk === "Medium" || prediction.lightningRisk === "மிதமானது") {
+    alertBox.className = "weather-alert alert-medium";
+    alertIcon.textContent = "⚡";
+    alertTitle.textContent = lang.mediumRisk;
+    alertMessage.textContent = lang.alertLightningMedium;
+    alertTime.textContent = `${lang.lightningActivity}: ${prediction.lightningRisk}`;
+    alertBox.style.display = "block";
+    
+    weatherAdviceEl.innerHTML = currentLanguage === 'ta'
+      ? "⚡ <b>கவனம்:</b> மிதமான மின்னல் அபாயம். பாதுகாப்பு நடவடிக்கைகளை பின்பற்றுங்கள்."
+      : "⚡ <b>Attention:</b> Medium lightning risk. Follow safety precautions.";
+    
+  } else if (prediction.lightningRisk === "High" || prediction.lightningRisk === "அதிகம்") {
+    alertBox.className = "weather-alert alert-high";
+    alertIcon.textContent = "⚠️";
+    alertTitle.textContent = lang.highRisk;
+    alertMessage.textContent = lang.alertLightningHigh;
+    alertTime.textContent = `${lang.lightningActivity}: ${prediction.lightningRisk}`;
+    alertBox.style.display = "block";
+    
+    weatherAdviceEl.innerHTML = currentLanguage === 'ta'
+      ? "⚠️ <b>அவசரம்:</b> அதிக மின்னல் அபாயம்! உடனடியாக பாதுகாப்பான இடத்திற்கு செல்லவும்."
+      : "⚠️ <b>Emergency:</b> High lightning risk! Move to safe location immediately.";
+    
+  } else {
+    alertBox.className = "weather-alert alert-low";
+    alertIcon.textContent = "✅";
+    alertTitle.textContent = lang.lowRisk;
+    alertMessage.textContent = lang.alertOptimalConditions;
+    alertTime.textContent = "";
+    alertBox.style.display = "block";
+    
+    weatherAdviceEl.innerHTML = currentLanguage === 'ta'
+      ? "✅ <b>நல்லது:</b> வானிலை நிலைமைகள் உகந்தவை. விவசாய பணிகளை தொடரலாம்."
+      : "✅ <b>Good:</b> Weather conditions are optimal. Continue farming activities.";
+  }
+}
+
 /* ---------- Chart Functions ---------- */
 function switchChartType(type) {
   // Update toggle buttons
@@ -1361,7 +1697,8 @@ function createGaugeChart(data) {
         currentLanguage === 'ta' ? 'மண் ஈரப்பதம்' : 'Soil Moisture',
         currentLanguage === 'ta' ? 'வெப்பநிலை' : 'Temperature',
         currentLanguage === 'ta' ? 'காற்று ஈரப்பதம்' : 'Humidity',
-        currentLanguage === 'ta' ? 'மண் நைட்ரேட்' : 'Soil Nitrate'
+        currentLanguage === 'ta' ? 'மண் நைட்ரேட்' : 'Soil Nitrate',
+        currentLanguage === 'ta' ? 'மின்னல் அபாயம்' : 'Lightning Risk'
       ],
       datasets: [{
         label: currentLanguage === 'ta' ? 'தற்போதைய மதிப்புகள்' : 'Current Values',
@@ -1369,7 +1706,8 @@ function createGaugeChart(data) {
           data.soilMoist || 0,
           data.soilTemp || 0,
           data.humidity || 0,
-          data.nitrate || 0
+          data.nitrate || 0,
+          data.lightning ? (data.lightning.level === "High" ? 80 : data.lightning.level === "Medium" ? 60 : 20) : 20
         ],
         backgroundColor: 'rgba(34, 197, 94, 0.2)',
         borderColor: '#22c55e',
@@ -1491,6 +1829,7 @@ function updateDataDisplay(data) {
   const temp = data.soilTemp || 0;
   const humidity = data.humidity || 0;
   const nitrate = data.nitrate || 0;
+  const lightning = data.lightning || { level: "Low", distance: 0 };
   
   // Update values
   document.getElementById('soilMoistValue').textContent = soilMoist;
@@ -1498,7 +1837,13 @@ function updateDataDisplay(data) {
   document.getElementById('humidityValue').textContent = humidity;
   document.getElementById('nitrateValue').textContent = nitrate;
   
-  // Color coding
+  // Lightning display
+  const lightningValue = document.getElementById('lightningValue');
+  lightningValue.textContent = lightning.level;
+  lightningValue.className = lightning.level === "High" ? 'data-value data-danger' : 
+                              lightning.level === "Medium" ? 'data-value data-warning' : 'data-value data-good';
+  
+  // Color coding for other values
   document.getElementById('soilMoistValue').className = soilMoist >= 60 ? 'data-value data-good' : 
                      soilMoist >= 40 ? 'data-value data-warning' : 'data-value data-danger';
   document.getElementById('tempValue').className = temp >= 20 && temp <= 32 ? 'data-value data-good' : 
@@ -1507,12 +1852,21 @@ function updateDataDisplay(data) {
                      humidity >= 40 && humidity < 60 ? 'data-value data-warning' : 'data-value data-danger';
   document.getElementById('nitrateValue').className = nitrate >= 40 && nitrate <= 60 ? 'data-value data-good' : 
                      nitrate >= 20 && nitrate < 40 ? 'data-value data-warning' : 'data-value data-danger';
+  
+  // Predict and display rainfall
+  const rainfallPrediction = predictRainfall(data);
+  document.getElementById('rainfallValue').textContent = `${rainfallPrediction.probability}%`;
+  document.getElementById('rainfallValue').className = rainfallPrediction.alertLevel === "high" ? 'data-value data-danger' : 
+                                                      rainfallPrediction.alertLevel === "medium" ? 'data-value data-warning' : 'data-value data-good';
+  
+  // Update weather display
+  updateWeatherDisplay(rainfallPrediction);
 }
 
 /* ---------- Crop Recommendation ---------- */
 function getNextMonthRecommendation(currentMonth, fieldData) {
   const nextMonth = (currentMonth + 1) % 12;
-  const monthName = currentLanguage === 'ta' ? tamilMonthNames[nextMonth] : englishMonthNames[nextMonth];
+  const monthName = getMonthName(nextMonth, currentLanguage);
   
   document.getElementById('nextMonthName').textContent = monthName;
   
@@ -1527,14 +1881,11 @@ function getNextMonthRecommendation(currentMonth, fieldData) {
     };
   }
   
-  suitableCrops.sort((a, b) => {
-    const profitA = parseInt(a.profitRange[currentLanguage].split('-')[0].replace(/[^0-9]/g, ''));
-    const profitB = parseInt(b.profitRange[currentLanguage].split('-')[0].replace(/[^0-9]/g, ''));
-    return profitB - profitA;
-  });
+  // Sort by profit score (highest first)
+  suitableCrops.sort((a, b) => b.profitScore - a.profitScore);
   
   const topCrops = suitableCrops.slice(0, 3);
-  const alternatives = suitableCrops.slice(1, 6); // Get 5 alternatives
+  const alternatives = suitableCrops.slice(1, 7); // Get top 6 alternatives (excluding #1)
   
   let bestCrop = topCrops[0];
   const soilMoist = fieldData?.soilMoist || 50;
@@ -1566,14 +1917,10 @@ function getAlternativeCrops() {
     return [];
   }
   
-  // Sort by profit and return alternatives (exclude the top one)
+  // Sort by profit score and return top 6 alternatives (excluding the #1)
   return suitableCrops
-    .sort((a, b) => {
-      const profitA = parseInt(a.profitRange[currentLanguage].split('-')[0].replace(/[^0-9]/g, ''));
-      const profitB = parseInt(b.profitRange[currentLanguage].split('-')[0].replace(/[^0-9]/g, ''));
-      return profitB - profitA;
-    })
-    .slice(1, 7); // Return up to 6 alternatives
+    .sort((a, b) => b.profitScore - a.profitScore)
+    .slice(1, 7); // Return exactly 6 alternatives
 }
 
 function updateCropDisplay(recommendation) {
@@ -1594,7 +1941,7 @@ function updateCropDisplay(recommendation) {
     fertilizerElement.innerHTML = fertilizerHTML;
   }
   
-  // Update alternative crops
+  // Update alternative crops (shows exactly 6)
   const alternatives = getAlternativeCrops();
   updateAlternativeCropsDisplay(alternatives);
   
@@ -1626,6 +1973,7 @@ function updateCropDetails(crop) {
       <div style="font-size:40px;">${crop.icon}</div>
       <div>
         <div style="font-size:18px;color:#22c55e;font-weight:bold;">${crop.name[currentLanguage]}</div>
+        <div style="color:#94a3b8;font-size:13px;">Profit Score: ${crop.profitScore}/100</div>
       </div>
     </div>
     
@@ -1733,7 +2081,7 @@ function startFirebaseListeners() {
     }
   });
 
-  // Field data
+  // Field data with lightning information
   const fieldRef = firebase.database().ref("agri");
   fieldRef.on("value", function(snap) {
     const allData = snap.val();
@@ -1747,7 +2095,8 @@ function startFirebaseListeners() {
         soilMoist: fieldData.soilMoist || 0,
         soilTemp: fieldData.soilTemp || 0,
         humidity: fieldData.humidity || 0,
-        nitrate: fieldData.nitrate || 0
+        nitrate: fieldData.nitrate || 0,
+        lightning: fieldData.lightning || { level: "Low", distance: 0 }
       });
       
       if (fieldHistory.length > MAX_HISTORY) {
@@ -1820,15 +2169,23 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 });
 
-// Test data function
+// Test data function with lightning simulation
 window.addTestData = function() {
   if (!isFirebaseInitialized) return;
+  
+  const lightningLevels = ["Low", "Medium", "High"];
+  const randomLevel = lightningLevels[Math.floor(Math.random() * 3)];
   
   const testData = {
     soilMoist: Math.floor(Math.random() * 30) + 40,
     soilTemp: Math.floor(Math.random() * 15) + 25,
     humidity: Math.floor(Math.random() * 40) + 40,
-    nitrate: Math.floor(Math.random() * 30) + 30
+    nitrate: Math.floor(Math.random() * 30) + 30,
+    lightning: { 
+      level: randomLevel,
+      distance: Math.floor(Math.random() * 20) + 5,
+      intensity: Math.floor(Math.random() * 100)
+    }
   };
   
   firebase.database().ref("agri/field1").set(testData);
@@ -1848,6 +2205,7 @@ function showCropDetails(cropName) {
   let detailsHTML = `
     <div style="margin-bottom:15px;">
       <div style="color:#94a3b8;margin-bottom:5px;">${currentLanguage === 'ta' ? 'ஆங்கிலம்:' : 'English:'} <b style="color:#e5e7eb;">${crop.name.en}</b></div>
+      <div style="color:#94a3b8;font-size:13px;">Profit Score: <b style="color:#22c55e;">${crop.profitScore}/100</b></div>
     </div>
     
     <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:15px;">
